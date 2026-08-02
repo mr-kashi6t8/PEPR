@@ -1,0 +1,208 @@
+{
+    "sources": [
+        {
+            "id": "sbp_daily",
+            "type": "sbp",
+            "name": "State Bank of Pakistan",
+            "schedule": "0 18 * * *",
+            "config": {
+                "endpoint": "https://api.sbp.org.pk/data"
+            }
+        },
+        {
+            "id": "pbs_monthly",
+            "type": "pbs",
+            "name": "Pakistan Bureau of Statistics",
+            "schedule": "0 9 1 * *",
+            "config": {
+                "url": "https://www.pbs.gov.pk/content/statistics"
+            }
+        },
+        {
+            "id": "dawn_economy_rss",
+            "type": "rss",
+            "name": "Dawn Business & Economy",
+            "schedule": "0 */4 * * *",
+            "config": {
+                "rss_url": "https://www.dawn.com/feeds/business",
+                "source_name": "Dawn Business & Economy"
+            }
+        },
+        {
+            "id": "m3_public_discussion_bundle",
+            "type": "public_discussion",
+            "name": "Pakistan Public Discussion Bundle",
+            "schedule": "15 */6 * * *",
+            "config": {
+                "request_retries": 3,
+                "min_delay_seconds": 1.0,
+                "max_delay_seconds": 3.0,
+                "feeds": [
+                    {
+                        "type": "rss",
+                        "name": "Dawn Business & Economy",
+                        "source_name": "Dawn Business & Economy",
+                        "rss_url": "https://www.dawn.com/feeds/business",
+                        "limit": 20
+                    },
+                    {
+                        "type": "rss",
+                        "name": "Express Tribune Business",
+                        "source_name": "Express Tribune Business",
+                        "rss_url": "https://tribune.com.pk/feed/business",
+                        "limit": 20
+                    },
+                    {
+                        "type": "rss",
+                        "name": "Geo News Business",
+                        "source_name": "Geo News Business",
+                        "rss_url": "https://www.geo.tv/rss/1/4",
+                        "limit": 20
+                    },
+                    {
+                        "type": "rss",
+                        "name": "Google News Pakistan Economy",
+                        "source_name": "Google News Pakistan Economy",
+                        "rss_url": "https://news.google.com/rss/search?q=Pakistan%20economy%20OR%20inflation%20OR%20rupee%20OR%20budget%20when%3A7d&hl=en-PK&gl=PK&ceid=PK:en",
+                        "limit": 20
+                    },
+                    {
+                        "type": "gdelt",
+                        "name": "GDELT Pakistan Economy",
+                        "source_name": "GDELT Pakistan Economy",
+                        "query": "Pakistan economy OR inflation OR rupee OR budget OR IMF OR SBP OR PBS OR FBR",
+                        "limit": 25
+                    }
+                ]
+            }
+        },
+        {
+            "id": "m3_urdu_policy_bundle",
+            "type": "public_discussion",
+            "name": "Pakistan Urdu Policy Bundle",
+            "schedule": "45 */6 * * *",
+            "config": {
+                "request_retries": 3,
+                "min_delay_seconds": 1.0,
+                "max_delay_seconds": 3.0,
+                "feeds": [
+                    {
+                        "type": "rss",
+                        "name": "Google News Urdu Economy",
+                        "source_name": "Google News Urdu Economy",
+                        "rss_url": "https://news.google.com/rss/search?q=%D9%BE%D8%A7%DA%A9%D8%B3%D8%AA%D8%A7%D9%86%20%D9%85%D8%B9%DB%8C%D8%B4%D8%AA%20OR%20%D9%85%DB%81%D9%86%DA%AF%D8%A7%D8%A6%DB%8C%20OR%20%D8%A8%D8%AC%D9%BD%20OR%20%D8%B1%D9%88%D9%BE%DB%8C%DB%81%20OR%20%D9%86%D8%B4%D8%A7%D8%B3%D8%AA%20when%3A7d&hl=ur-PK&gl=PK&ceid=PK:ur",
+                        "limit": 20
+                    },
+                    {
+                        "type": "rss",
+                        "name": "BBC Urdu Pakistan",
+                        "source_name": "BBC Urdu Pakistan",
+                        "rss_url": "https://feeds.bbci.co.uk/urdu/pakistan/rss.xml",
+                        "limit": 20
+                    },
+                    {
+                        "type": "gdelt",
+                        "name": "GDELT Urdu Policy",
+                        "source_name": "GDELT Urdu Policy",
+                        "query": "پاکستان معیشت OR مہنگائی OR بجٹ OR روپے OR پالیسی OR ٹیکس OR عوامی ردعمل",
+                        "limit": 25
+                    }
+                ]
+            }
+        },
+        {
+            "id": "worldbank_macro_bundle",
+            "type": "worldbank",
+            "name": "Pakistan Macro Watch",
+            "schedule": "30 1 * * *",
+            "config": {
+                "indicator_ids": [
+                    "FP.CPI.TOTL.ZG",
+                    "NY.GDP.MKTP.KD.ZG",
+                    "BN.CAB.XOKA.CD",
+                    "SL.UEM.TOTL.ZS",
+                    "PA.NUS.FCRF",
+                    "GC.TAX.TOTL.GD.ZS"
+                ]
+            }
+        },
+        {
+            "id": "ap_business_rss",
+            "type": "rss",
+            "name": "Reuters Business",
+            "schedule": "0 */4 * * *",
+            "config": {
+                "rss_url": "https://feeds.reuters.com/reuters/businessNews",
+                "rss_urls": [
+                    "https://feeds.reuters.com/reuters/businessNews",
+                    "https://news.google.com/rss/search?q=Reuters%20business%20when%3A7d&hl=en-PK&gl=PK&ceid=PK:en"
+                ],
+                "source_name": "Reuters Business"
+            }
+        },
+        {
+            "id": "geo_news_rss",
+            "type": "rss",
+            "name": "Geo News Business",
+            "schedule": "0 */6 * * *",
+            "config": {
+                "rss_url": "https://www.geo.tv/rss/1/4",
+                "source_name": "Geo News Business"
+            }
+        },
+        {
+            "id": "express_tribune_rss",
+            "type": "rss",
+            "name": "Express Tribune Business",
+            "schedule": "0 */4 * * *",
+            "config": {
+                "rss_url": "https://tribune.com.pk/feed/business",
+                "source_name": "Express Tribune Business"
+            }
+        },
+        {
+            "id": "fbr_monthly_revenue",
+            "type": "fbr",
+            "name": "Federal Board of Revenue",
+            "schedule": "0 10 1 * *",
+            "config": {
+                "url": "https://www.fbr.gov.pk/"
+            }
+        },
+        {
+            "id": "psx_daily",
+            "type": "psx",
+            "name": "Pakistan Stock Exchange",
+            "schedule": "0 17 * * *",
+            "config": {
+                "endpoint": "https://api.psx.com.pk/data"
+            }
+        },
+        {
+            "id": "youtube_talkshows",
+            "type": "youtube",
+            "name": "YouTube Economy Shows",
+            "schedule": "0 22 * * *",
+            "config": {
+                "source_name": "YouTube Economy Shows",
+                "channel_ids": [
+                    "UCnUYZLuoy1rq1aVMwx4aTzw",
+                    "UCt3ld6j5HmEQJOQjQvX5GAA",
+                    "UCWgX_V3u9lG4_u7y84ZzGgQ",
+                    "UC85E1b-mJp_e8vB1c3e3XgQ",
+                    "UCJ4L0P3g7_g2XG6vVzE3k-g"
+                ]
+            }
+        },
+        {
+            "id": "worldbank_pakistan",
+            "type": "worldbank",
+            "name": "World Bank Open Data Pakistan",
+            "schedule": "0 0 1 * *",
+            "config": {
+                "country": "PAK"
+            }
+        }
+    ]
+}
+

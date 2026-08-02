@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Weekly Economics Radar - 2026-08-02</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 15mm 15mm 15mm 15mm;
+        }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            color: #1e293b;
+            line-height: 1.6;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Header Styling */
+        .pide-header {
+            width: 100%;
+            border-bottom: 3px solid #0f172a;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .header-logo-td {
+            width: 25%;
+            vertical-align: middle;
+        }
+        .header-title-td {
+            width: 75%;
+            vertical-align: middle;
+            text-align: right;
+        }
+        .pide-logo-img {
+            max-height: 70px;
+            max-width: 180px;
+        }
+        .institution-name {
+            font-size: 10px;
+            font-weight: bold;
+            color: #0284c7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0 0 2px 0;
+        }
+        .main-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0 0 4px 0;
+            text-transform: uppercase;
+        }
+        .sub-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #d97706;
+            margin: 0;
+        }
+        
+        /* Meta Banner */
+        .meta-banner {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #0284c7;
+            padding: 8px 12px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .meta-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+        .meta-table td {
+            padding: 2px 8px;
+        }
+        .meta-label {
+            font-weight: bold;
+            color: #475569;
+        }
+        .meta-val {
+            color: #0f172a;
+            font-weight: 600;
+        }
+        
+        /* Section Headings */
+        .section-heading {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+            background-color: #f1f5f9;
+            border-left: 4px solid #0f172a;
+            padding: 6px 10px;
+            margin-top: 22px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+        
+        /* Executive Summary Box */
+        .exec-summary-box {
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-left: 5px solid #d97706;
+            padding: 14px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-size: 11.5px;
+            color: #1e293b;
+        }
+        
+        /* Problem Cards */
+        .problem-card {
+            border: 1px solid #e2e8f0;
+            background-color: #ffffff;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        .card-header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 6px;
+        }
+        .problem-num {
+            font-weight: bold;
+            color: #0f172a;
+            font-size: 12px;
+        }
+        .severity-badge-critical {
+            background-color: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 9px;
+            text-transform: uppercase;
+        }
+        .severity-badge-high {
+            background-color: #ffedd5;
+            color: #c2410c;
+            border: 1px solid #fed7aa;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 9px;
+            text-transform: uppercase;
+        }
+        .severity-badge-medium {
+            background-color: #fef9c3;
+            color: #854d0e;
+            border: 1px solid #fef08a;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 9px;
+            text-transform: uppercase;
+        }
+        .problem-title-text {
+            font-size: 13px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+        .problem-body-text {
+            font-size: 11px;
+            color: #334155;
+            margin: 3px 0;
+        }
+        
+        /* Styled Tables */
+        .styled-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+            margin-bottom: 16px;
+            font-size: 10.5px;
+        }
+        .styled-table th {
+            background-color: #0f172a;
+            color: #ffffff;
+            font-weight: bold;
+            padding: 8px 10px;
+            text-align: left;
+            border: 1px solid #0f172a;
+        }
+        .styled-table td {
+            padding: 7px 10px;
+            border: 1px solid #e2e8f0;
+            color: #334155;
+        }
+        .styled-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        
+        /* Research Cards */
+        .research-card {
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #0284c7;
+            background-color: #f8fafc;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 4px;
+        }
+        .research-paper-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #0369a1;
+            margin-bottom: 4px;
+        }
+        
+        /* Footer */
+        .pide-footer {
+            margin-top: 35px;
+            border-top: 2px solid #cbd5e1;
+            padding-top: 10px;
+            text-align: center;
+            font-size: 9.5px;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+<!-- PIDE Institutional Header -->
+<div class="pide-header">
+    <table class="header-table">
+        <tr>
+            <td class="header-logo-td">
+                
+                <img src="pide-logo.png" class="pide-logo-img" alt="PIDE Logo" />
+                
+            </td>
+            <td class="header-title-td">
+                <div class="institution-name">Pakistan Institute of Development Economics (PIDE)</div>
+                <div class="main-title">Pakistan Economics Problem Radar</div>
+                <div class="sub-title">Weekly Macroeconomic & Policy Synthesis Report</div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- Report Metadata Banner -->
+<div class="meta-banner">
+    <table class="meta-table">
+        <tr>
+            <td><span class="meta-label">Report Period:</span> <span class="meta-val">2026-08-02</span></td>
+            <td><span class="meta-label">Classification:</span> <span class="meta-val">OFFICIAL POLICY BRIEF</span></td>
+            <td><span class="meta-label">Version:</span> <span class="meta-val">v1.0</span></td>
+            <td><span class="meta-label">Engine Audit:</span> <span class="meta-val">M1-M5 SYNTHESIZED</span></td>
+        </tr>
+    </table>
+</div>
+
+<!-- 1. Executive Summary -->
+<div class="section-heading">1. Executive Macroeconomic Summary</div>
+<div class="exec-summary-box">
+    <strong>Executive Brief:</strong> This report synthesizes multi-layer evidence across Pakistan's Economic Problem Radar (PEPR) database. It integrates quantitative ML anomaly breaches, statutory target deviations, media sentiment indicators, and official PIDE Research Showcase publications to deliver high-priority policy guidance for executive decision makers.
+    <br/><br/>
+    <em>Synthesized from 7-day empirical database observations across Pakistan's Economic Problem Radar (PEPR). Evaluated against live indicator anomalies, statutory policy target gaps, and PIDE Research Showcase publications to provide high-priority policy interventions.</em>
+</div>
+
+<!-- 2. Top Emerging Economic Problems -->
+<div class="section-heading">2. Top Emerging Economic Problems Radar</div>
+
+<div class="problem-card">
+    <table class="card-header-table">
+        <tr>
+            <td><span class="problem-num">RANK #1: Elevated Consumer Inflation & Cost-of-Living Stress</span></td>
+            <td style="text-align: right;">
+                
+                <span class="severity-badge-critical">CRITICAL</span>
+                
+            </td>
+        </tr>
+    </table>
+    <div class="problem-body-text"><strong>Root Cause Analysis:</strong> Persistent CPI inflation driven by supply chain bottlenecks, energy tariff pass-through, and food price volatility. Multi-source 7-day database analysis flagged: 2 quantitative ML anomalies detected in 7-day time series; statutory policy gap of +267.5% vs Sensitive Essential Goods Price Inflation Cap; 81 media reports with negative sentiment signals.</div>
+    <div class="problem-body-text"><strong>Impact Assessment:</strong> Severity level CRITICAL based on observed evidence and persistence.</div>
+</div>
+
+<div class="problem-card">
+    <table class="card-header-table">
+        <tr>
+            <td><span class="problem-num">RANK #2: Energy Sector Circular Debt Accumulation & Capacity Payments</span></td>
+            <td style="text-align: right;">
+                
+                <span class="severity-badge-critical">CRITICAL</span>
+                
+            </td>
+        </tr>
+    </table>
+    <div class="problem-body-text"><strong>Root Cause Analysis:</strong> Accumulation of power sector circular debt straining fiscal accounts and industrial competitiveness. Multi-source 7-day database analysis flagged: statutory policy gap of +15.2% vs Power Sector Circular Debt Structural Cap; 56 media reports with negative sentiment signals.</div>
+    <div class="problem-body-text"><strong>Impact Assessment:</strong> Severity level CRITICAL based on observed evidence and persistence.</div>
+</div>
+
+<div class="problem-card">
+    <table class="card-header-table">
+        <tr>
+            <td><span class="problem-num">RANK #3: FBR Revenue Collection Deficit & Low Tax-to-GDP Ratio</span></td>
+            <td style="text-align: right;">
+                
+                <span class="severity-badge-high">HIGH</span>
+                
+            </td>
+        </tr>
+    </table>
+    <div class="problem-body-text"><strong>Root Cause Analysis:</strong> Shortfall in statutory revenue targets threatening fiscal consolidation targets under the medium-term budget framework. Multi-source 7-day database analysis flagged: 1 quantitative ML anomalies detected in 7-day time series; statutory policy gap of +15520.7% vs Annual FBR Net Revenue Collection Target; 44 media reports with negative sentiment signals.</div>
+    <div class="problem-body-text"><strong>Impact Assessment:</strong> Severity level HIGH based on observed evidence and persistence.</div>
+</div>
+
+<div class="problem-card">
+    <table class="card-header-table">
+        <tr>
+            <td><span class="problem-num">RANK #4: Foreign Exchange Reserve Vulnerability & Currency Volatility</span></td>
+            <td style="text-align: right;">
+                
+                <span class="severity-badge-high">HIGH</span>
+                
+            </td>
+        </tr>
+    </table>
+    <div class="problem-body-text"><strong>Root Cause Analysis:</strong> Gross foreign exchange reserves cover remaining below safety thresholds required for external debt servicing. Multi-source 7-day database analysis flagged: 4 quantitative ML anomalies detected in 7-day time series; statutory policy gap of +176372131071.5% vs Minimum Foreign Reserves Cover (3 Months Imports); 21 media reports with negative sentiment signals.</div>
+    <div class="problem-body-text"><strong>Impact Assessment:</strong> Severity level HIGH based on observed evidence and persistence.</div>
+</div>
+
+<div class="problem-card">
+    <table class="card-header-table">
+        <tr>
+            <td><span class="problem-num">RANK #5: High Policy Interest Rate & Private Sector Credit Compression</span></td>
+            <td style="text-align: right;">
+                
+                <span class="severity-badge-high">HIGH</span>
+                
+            </td>
+        </tr>
+    </table>
+    <div class="problem-body-text"><strong>Root Cause Analysis:</strong> Elevated benchmark policy rate constraining private sector capital investments while increasing sovereign debt servicing costs. Multi-source 7-day database analysis flagged: statutory policy gap of +69.6% vs MPC Benchmark Policy Rate Target; 28 media reports with negative sentiment signals.</div>
+    <div class="problem-body-text"><strong>Impact Assessment:</strong> Severity level HIGH based on observed evidence and persistence.</div>
+</div>
+
+<div class="problem-card">
+    <table class="card-header-table">
+        <tr>
+            <td><span class="problem-num">RANK #6: Current Account Vulnerability & Export Stagnation</span></td>
+            <td style="text-align: right;">
+                
+                <span class="severity-badge-medium">MEDIUM</span>
+                
+            </td>
+        </tr>
+    </table>
+    <div class="problem-body-text"><strong>Root Cause Analysis:</strong> Persistent imbalance between import demand and narrow export base creating recurring balance-of-payments pressures. Multi-source 7-day database analysis flagged: 2 quantitative ML anomalies detected in 7-day time series; statutory policy gap of +176372131071.5% vs Minimum Foreign Reserves Cover (3 Months Imports); 57 media reports with negative sentiment signals.</div>
+    <div class="problem-body-text"><strong>Impact Assessment:</strong> Severity level MEDIUM based on observed evidence and persistence.</div>
+</div>
+
+<div class="problem-card">
+    <table class="card-header-table">
+        <tr>
+            <td><span class="problem-num">RANK #7: Youth Unemployment & Labor Market Informalization</span></td>
+            <td style="text-align: right;">
+                
+                <span class="severity-badge-medium">MEDIUM</span>
+                
+            </td>
+        </tr>
+    </table>
+    <div class="problem-body-text"><strong>Root Cause Analysis:</strong> Rising labor force unemployment and underemployment among educated urban youth. Multi-source 7-day database analysis flagged: statutory policy gap of -14.0% vs National Labor Force Unemployment Ceiling; 14 media reports with negative sentiment signals.</div>
+    <div class="problem-body-text"><strong>Impact Assessment:</strong> Severity level MEDIUM based on observed evidence and persistence.</div>
+</div>
+
+<div class="problem-card">
+    <table class="card-header-table">
+        <tr>
+            <td><span class="problem-num">RANK #8: Capital Market Fluctuations & Investor Sentiment Friction</span></td>
+            <td style="text-align: right;">
+                
+                <span class="severity-badge-medium">MEDIUM</span>
+                
+            </td>
+        </tr>
+    </table>
+    <div class="problem-body-text"><strong>Root Cause Analysis:</strong> Volatility in KSE-100 benchmark index reflecting macroeconomic uncertainties and institutional capital outflows. Multi-source 7-day database analysis flagged: statutory policy gap of -23.2% vs PSX Daily Market Liquidity Volume Target; 75 media reports with negative sentiment signals.</div>
+    <div class="problem-body-text"><strong>Impact Assessment:</strong> Severity level MEDIUM based on observed evidence and persistence.</div>
+</div>
+
+<div class="problem-card">
+    <table class="card-header-table">
+        <tr>
+            <td><span class="problem-num">RANK #9: Broad Money Supply (M2) Growth & Liquidity Overhang</span></td>
+            <td style="text-align: right;">
+                
+                <span class="severity-badge-medium">MEDIUM</span>
+                
+            </td>
+        </tr>
+    </table>
+    <div class="problem-body-text"><strong>Root Cause Analysis:</strong> High expansion in broad money supply creating underlying demand-pull inflationary pressures. Multi-source 7-day database analysis flagged: statutory policy gap of -23.2% vs PSX Daily Market Liquidity Volume Target; 9 media reports with negative sentiment signals.</div>
+    <div class="problem-body-text"><strong>Impact Assessment:</strong> Severity level MEDIUM based on observed evidence and persistence.</div>
+</div>
+
+<div class="problem-card">
+    <table class="card-header-table">
+        <tr>
+            <td><span class="problem-num">RANK #10: Sensitive Price Indicator (SPI) Food & Essential Goods Inflation</span></td>
+            <td style="text-align: right;">
+                
+                <span class="severity-badge-high">HIGH</span>
+                
+            </td>
+        </tr>
+    </table>
+    <div class="problem-body-text"><strong>Root Cause Analysis:</strong> Short-term spike in weekly sensitive price index impacting vulnerable low-income household consumption. Multi-source 7-day database analysis flagged: statutory policy gap of +267.5% vs Sensitive Essential Goods Price Inflation Cap; 39 media reports with negative sentiment signals.</div>
+    <div class="problem-body-text"><strong>Impact Assessment:</strong> Severity level HIGH based on observed evidence and persistence.</div>
+</div>
+
+
+<!-- 3. Statutory Policy Target Deviations (M4) -->
+<div class="section-heading">3. Statutory Policy Target Deviations (M4 Engine)</div>
+<table class="styled-table">
+    <thead>
+        <tr>
+            <th>Statutory Policy Target Benchmark</th>
+            <th>Deviation Reasoning & Gap Assessment</th>
+            <th>Systemic Impact Factors</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        <tr>
+            <td><strong>Inflation Target FY26</strong></td>
+            <td>Statutory target deviation gap of +135.8% vs benchmark Inflation Target FY26 with status NEGATIVE.</td>
+            <td>Status: NEGATIVE, Magnitude score: 88.0</td>
+        </tr>
+        
+        <tr>
+            <td><strong>Inflation Target FY26</strong></td>
+            <td>Statutory target deviation gap of +135.8% vs benchmark Inflation Target FY26 with status NEGATIVE.</td>
+            <td>Status: NEGATIVE, Magnitude score: 88.0</td>
+        </tr>
+        
+        <tr>
+            <td><strong>Inflation Target FY26</strong></td>
+            <td>Statutory target deviation gap of +135.8% vs benchmark Inflation Target FY26 with status NEGATIVE.</td>
+            <td>Status: NEGATIVE, Magnitude score: 88.0</td>
+        </tr>
+        
+        <tr>
+            <td><strong>Inflation Target FY26</strong></td>
+            <td>Statutory target deviation gap of +135.8% vs benchmark Inflation Target FY26 with status NEGATIVE.</td>
+            <td>Status: NEGATIVE, Magnitude score: 88.0</td>
+        </tr>
+        
+        <tr>
+            <td><strong>SBP Medium-Term Inflation Target Band</strong></td>
+            <td>Statutory target deviation gap of -49.3% vs benchmark SBP Medium-Term Inflation Target Band with status POSITIVE.</td>
+            <td>Status: POSITIVE, Magnitude score: 9.9</td>
+        </tr>
+        
+        <tr>
+            <td><strong>MPC Benchmark Policy Rate Target</strong></td>
+            <td>Statutory target deviation gap of +69.6% vs benchmark MPC Benchmark Policy Rate Target with status NEGATIVE.</td>
+            <td>Status: NEGATIVE, Magnitude score: 10.0</td>
+        </tr>
+        
+    </tbody>
+</table>
+
+<!-- 4. Economic Indicator Trends (M1 & M2) -->
+<div class="section-heading">4. Economic Indicator Trends & Anomaly Radar (M1 & M2)</div>
+<table class="styled-table">
+    <thead>
+        <tr>
+            <th>Indicator Metric</th>
+            <th>Trend Direction</th>
+            <th>Key Drivers</th>
+            <th>Historical Context</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        <tr>
+            <td><strong>2026-07-29T08:21:58.308603+00:00 to 2026-07-31T04:34:31.929131+00:00</strong></td>
+            <td><strong>FLAT</strong></td>
+            <td>flat</td>
+            <td>Observed change of 0.0% with severity low</td>
+        </tr>
+        
+        <tr>
+            <td><strong>2026-07-26T08:01:31.168209+00:00 to 2026-07-26T08:04:42.118084+00:00</strong></td>
+            <td><strong>FLAT</strong></td>
+            <td>flat</td>
+            <td>Observed change of 0.0% with severity low</td>
+        </tr>
+        
+        <tr>
+            <td><strong>2026-07-29T08:45:25.168063+00:00 to 2026-07-31T04:29:24.807171+00:00</strong></td>
+            <td><strong>FLAT</strong></td>
+            <td>flat</td>
+            <td>Observed change of 0.0% with severity low</td>
+        </tr>
+        
+        <tr>
+            <td><strong>2026-07-26T08:04:16.371871+00:00 to 2026-07-26T08:07:47.209793+00:00</strong></td>
+            <td><strong>FLAT</strong></td>
+            <td>flat</td>
+            <td>Observed change of 0.0% with severity low</td>
+        </tr>
+        
+        <tr>
+            <td><strong>2025-01-01T00:00:00+00:00 to 2025-01-01T00:00:00+00:00</strong></td>
+            <td><strong>FLAT</strong></td>
+            <td>flat</td>
+            <td>Observed change of 0.0% with severity low</td>
+        </tr>
+        
+        <tr>
+            <td><strong>2026-05-26T14:02:50.564392+00:00 to 2026-06-25T14:02:50.564392+00:00</strong></td>
+            <td><strong>UPWARD</strong></td>
+            <td>upward</td>
+            <td>Observed change of 2.713178294573637% with severity low</td>
+        </tr>
+        
+    </tbody>
+</table>
+
+<!-- 5. Relevant PIDE Research Showcase Interventions (M5 RAG Engine) -->
+<div class="section-heading">5. Actionable Interventions from PIDE Research Showcase (M5 RAG)</div>
+
+<div class="research-card">
+    <div class="research-paper-title">Macro Target: Elevated Consumer Inflation & Cost-of-Living Stress</div>
+    <div class="problem-body-text"><strong>PIDE Policy Intervention:</strong> Anchor policy intervention in Macroeconomic Implications of Energy Subsidies & Circular Debt in Pakistan (PIDE-WP-2024-88-TEST) by implementing targeted structural reforms, tariff rationalization, and fiscal discipline.</div>
+    <div class="problem-body-text"><strong>RAG Confidence Score:</strong> 0.94</div>
+    <div class="problem-body-text"><strong>Key Structural Reforms:</strong></div>
+    <ul style="margin: 4px 0 0 16px; padding: 0;">
+        
+        <li>Anchor policy intervention in Macroeconomic Implications of Energy Subsidies & Circular Debt in Pakistan (PIDE-WP-2024-88-TEST) by implementing targeted structural reforms, tariff rationalization, and fiscal discipline.</li>
+        
+    </ul>
+</div>
+
+<div class="research-card">
+    <div class="research-paper-title">Macro Target: Energy Sector Circular Debt Accumulation & Capacity Payments</div>
+    <div class="problem-body-text"><strong>PIDE Policy Intervention:</strong> Anchor policy intervention in Macroeconomic Implications of Energy Subsidies & Circular Debt in Pakistan (PIDE-WP-2024-88) by implementing targeted structural reforms, tariff rationalization, and fiscal discipline.</div>
+    <div class="problem-body-text"><strong>RAG Confidence Score:</strong> 0.94</div>
+    <div class="problem-body-text"><strong>Key Structural Reforms:</strong></div>
+    <ul style="margin: 4px 0 0 16px; padding: 0;">
+        
+        <li>Anchor policy intervention in Macroeconomic Implications of Energy Subsidies & Circular Debt in Pakistan (PIDE-WP-2024-88) by implementing targeted structural reforms, tariff rationalization, and fiscal discipline.</li>
+        
+    </ul>
+</div>
+
+<div class="research-card">
+    <div class="research-paper-title">Macro Target: FBR Revenue Collection Deficit & Low Tax-to-GDP Ratio</div>
+    <div class="problem-body-text"><strong>PIDE Policy Intervention:</strong> Anchor policy intervention in Unpacking Pakistan's Inflation Dynamics: Food vs Non-Food CPI Drivers (PIDE-WP-2023-198) by implementing targeted structural reforms, tariff rationalization, and fiscal discipline.</div>
+    <div class="problem-body-text"><strong>RAG Confidence Score:</strong> 0.94</div>
+    <div class="problem-body-text"><strong>Key Structural Reforms:</strong></div>
+    <ul style="margin: 4px 0 0 16px; padding: 0;">
+        
+        <li>Anchor policy intervention in Unpacking Pakistan's Inflation Dynamics: Food vs Non-Food CPI Drivers (PIDE-WP-2023-198) by implementing targeted structural reforms, tariff rationalization, and fiscal discipline.</li>
+        
+    </ul>
+</div>
+
+<div class="research-card">
+    <div class="research-paper-title">Macro Target: Foreign Exchange Reserve Vulnerability & Currency Volatility</div>
+    <div class="problem-body-text"><strong>PIDE Policy Intervention:</strong> Anchor policy intervention in Fiscal Federalism, Tax Devolution and the 7th NFC Award in Pakistan (PIDE-WP-2023-185) by implementing targeted structural reforms, tariff rationalization, and fiscal discipline.</div>
+    <div class="problem-body-text"><strong>RAG Confidence Score:</strong> 0.94</div>
+    <div class="problem-body-text"><strong>Key Structural Reforms:</strong></div>
+    <ul style="margin: 4px 0 0 16px; padding: 0;">
+        
+        <li>Anchor policy intervention in Fiscal Federalism, Tax Devolution and the 7th NFC Award in Pakistan (PIDE-WP-2023-185) by implementing targeted structural reforms, tariff rationalization, and fiscal discipline.</li>
+        
+    </ul>
+</div>
+
+<div class="research-card">
+    <div class="research-paper-title">Macro Target: High Policy Interest Rate & Private Sector Credit Compression</div>
+    <div class="problem-body-text"><strong>PIDE Policy Intervention:</strong> Anchor policy intervention in Reforming State-Owned Enterprises (SOEs) and Governance in Pakistan (PIDE-PB-2024-12) by implementing targeted structural reforms, tariff rationalization, and fiscal discipline.</div>
+    <div class="problem-body-text"><strong>RAG Confidence Score:</strong> 0.94</div>
+    <div class="problem-body-text"><strong>Key Structural Reforms:</strong></div>
+    <ul style="margin: 4px 0 0 16px; padding: 0;">
+        
+        <li>Anchor policy intervention in Reforming State-Owned Enterprises (SOEs) and Governance in Pakistan (PIDE-PB-2024-12) by implementing targeted structural reforms, tariff rationalization, and fiscal discipline.</li>
+        
+    </ul>
+</div>
+
+<div class="research-card">
+    <div class="research-paper-title">Macro Target: Current Account Vulnerability & Export Stagnation</div>
+    <div class="problem-body-text"><strong>PIDE Policy Intervention:</strong> Anchor policy intervention in Evaluating Pakistan's Real Exchange Rate and Export Competitiveness (PIDE-WP-2022-150) by implementing targeted structural reforms, tariff rationalization, and fiscal discipline.</div>
+    <div class="problem-body-text"><strong>RAG Confidence Score:</strong> 0.94</div>
+    <div class="problem-body-text"><strong>Key Structural Reforms:</strong></div>
+    <ul style="margin: 4px 0 0 16px; padding: 0;">
+        
+        <li>Anchor policy intervention in Evaluating Pakistan's Real Exchange Rate and Export Competitiveness (PIDE-WP-2022-150) by implementing targeted structural reforms, tariff rationalization, and fiscal discipline.</li>
+        
+    </ul>
+</div>
+
+<div class="research-card">
+    <div class="research-paper-title">Macro Target: Youth Unemployment & Labor Market Informalization</div>
+    <div class="problem-body-text"><strong>PIDE Policy Intervention:</strong> Anchor policy intervention in Tax Policy Reform: Broadening Agriculture and Real Estate Tax Bases (PIDE-PB-2024-05) by implementing targeted structural reforms, tariff rationalization, and fiscal discipline.</div>
+    <div class="problem-body-text"><strong>RAG Confidence Score:</strong> 0.94</div>
+    <div class="problem-body-text"><strong>Key Structural Reforms:</strong></div>
+    <ul style="margin: 4px 0 0 16px; padding: 0;">
+        
+        <li>Anchor policy intervention in Tax Policy Reform: Broadening Agriculture and Real Estate Tax Bases (PIDE-PB-2024-05) by implementing targeted structural reforms, tariff rationalization, and fiscal discipline.</li>
+        
+    </ul>
+</div>
+
+<div class="research-card">
+    <div class="research-paper-title">Macro Target: Capital Market Fluctuations & Investor Sentiment Friction</div>
+    <div class="problem-body-text"><strong>PIDE Policy Intervention:</strong> Anchor policy intervention in Youth Unemployment, Skill Mismatches and Brain Drain in Pakistan (PIDE-WP-2024-102) by implementing targeted structural reforms, tariff rationalization, and fiscal discipline.</div>
+    <div class="problem-body-text"><strong>RAG Confidence Score:</strong> 0.94</div>
+    <div class="problem-body-text"><strong>Key Structural Reforms:</strong></div>
+    <ul style="margin: 4px 0 0 16px; padding: 0;">
+        
+        <li>Anchor policy intervention in Youth Unemployment, Skill Mismatches and Brain Drain in Pakistan (PIDE-WP-2024-102) by implementing targeted structural reforms, tariff rationalization, and fiscal discipline.</li>
+        
+    </ul>
+</div>
+
+<div class="research-card">
+    <div class="research-paper-title">Macro Target: Broad Money Supply (M2) Growth & Liquidity Overhang</div>
+    <div class="problem-body-text"><strong>PIDE Policy Intervention:</strong> Anchor policy intervention in Sectoral Total Factor Productivity (TFP) and Growth Determinants in Pakistan (PIDE-RR-2023-01) by implementing targeted structural reforms, tariff rationalization, and fiscal discipline.</div>
+    <div class="problem-body-text"><strong>RAG Confidence Score:</strong> 0.94</div>
+    <div class="problem-body-text"><strong>Key Structural Reforms:</strong></div>
+    <ul style="margin: 4px 0 0 16px; padding: 0;">
+        
+        <li>Anchor policy intervention in Sectoral Total Factor Productivity (TFP) and Growth Determinants in Pakistan (PIDE-RR-2023-01) by implementing targeted structural reforms, tariff rationalization, and fiscal discipline.</li>
+        
+    </ul>
+</div>
+
+<div class="research-card">
+    <div class="research-paper-title">Macro Target: Sensitive Price Indicator (SPI) Food & Essential Goods Inflation</div>
+    <div class="problem-body-text"><strong>PIDE Policy Intervention:</strong> Anchor policy intervention in The Street Vending Economy: Formalization and Urban Governance (PIDE-PB-2023-22) by implementing targeted structural reforms, tariff rationalization, and fiscal discipline.</div>
+    <div class="problem-body-text"><strong>RAG Confidence Score:</strong> 0.94</div>
+    <div class="problem-body-text"><strong>Key Structural Reforms:</strong></div>
+    <ul style="margin: 4px 0 0 16px; padding: 0;">
+        
+        <li>Anchor policy intervention in The Street Vending Economy: Formalization and Urban Governance (PIDE-PB-2023-22) by implementing targeted structural reforms, tariff rationalization, and fiscal discipline.</li>
+        
+    </ul>
+</div>
+
+
+<!-- 6. Media Momentum & Trending News (M3) -->
+<div class="section-heading">6. Media Momentum & Sentiment Radar (M3 Pipeline)</div>
+<table class="styled-table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Ingested Media Headline / Trending Economic Topic</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        <tr>
+            <td style="width: 30px; text-align: center;">1</td>
+            <td>Elevated Consumer Inflation & Cost-of-Living Stress</td>
+        </tr>
+        
+        <tr>
+            <td style="width: 30px; text-align: center;">2</td>
+            <td>Energy Sector Circular Debt Accumulation & Capacity Payments</td>
+        </tr>
+        
+        <tr>
+            <td style="width: 30px; text-align: center;">3</td>
+            <td>FBR Revenue Collection Deficit & Low Tax-to-GDP Ratio</td>
+        </tr>
+        
+        <tr>
+            <td style="width: 30px; text-align: center;">4</td>
+            <td>Foreign Exchange Reserve Vulnerability & Currency Volatility</td>
+        </tr>
+        
+        <tr>
+            <td style="width: 30px; text-align: center;">5</td>
+            <td>High Policy Interest Rate & Private Sector Credit Compression</td>
+        </tr>
+        
+    </tbody>
+</table>
+
+<!-- 7. Data Provenance & Methodology -->
+<div class="section-heading">7. Data Provenance & System Methodology</div>
+<div class="exec-summary-box" style="border-left-color: #0284c7;">
+    <strong>Methodology:</strong> The report ranks emerging problems directly from live database observations across PEPR layers M1-M4 and ties each policy recommendation to official PIDE research documents indexed from pide.org.pk.
+    <br/><br/>
+    <strong>Data Quality Audit:</strong> Data freshness audited across 5 engine layers with full provenance tracking.
+</div>
+
+<!-- Institutional Footer -->
+<div class="pide-footer">
+    <strong>Pakistan Institute of Development Economics (PIDE)</strong><br/>
+    Quaid-i-Azam University Campus, P.O. Box 1091, Islamabad 44000, Pakistan<br/>
+    Official Research Showcase: <a href="https://pide.org.pk/research-showcase/" style="color:#0284c7;">https://pide.org.pk/research-showcase/</a> | PEPR AI Intelligence System
+</div>
+
+</body>
+</html>
