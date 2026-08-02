@@ -29,6 +29,9 @@ youtube-transcript-api==0.6.2
 pymupdf
 instructor
 openai
+anthropic
+python-multipart
+email-validator
 jinja2
 xhtml2pdf
 apscheduler
