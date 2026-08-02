@@ -24,5 +24,11 @@ scikit-learn==1.4.0
 
 textblob
 langdetect
-beautifulsoup4
 youtube-transcript-api==0.6.2
+
+pymupdf
+instructor
+openai
+jinja2
+xhtml2pdf
+apscheduler
