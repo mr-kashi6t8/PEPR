@@ -29,10 +29,11 @@ async def shutdown_event():
 app.add_middleware(RequestIDMiddleware)
 
 cors_origins = [str(origin) for origin in settings.CORS_ORIGINS] if settings.CORS_ORIGINS else ["*"]
+allow_creds = False if "*" in cors_origins else True
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
-    allow_credentials=True,
+    allow_credentials=allow_creds,
     allow_methods=["*"],
     allow_headers=["*"],
 )
