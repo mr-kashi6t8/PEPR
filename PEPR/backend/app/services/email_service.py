@@ -118,14 +118,60 @@ def _build_reset_email_html(full_name: str, reset_code: str) -> str:
 
 
 def is_smtp_configured() -> bool:
-    """Returns True if SMTP environment variables are set."""
+    """Returns True if either Resend API key or SMTP environment variables are set."""
+    resend_key = os.getenv("RESEND_API_KEY", "")
     smtp_user = os.getenv("SMTP_USER", "")
     smtp_password = os.getenv("SMTP_PASSWORD", "")
-    return bool(smtp_user and smtp_password not in ("", "your_app_password_here"))
+    return bool(resend_key or (smtp_user and smtp_password not in ("", "your_app_password_here")))
+
+
+def _send_resend_http(to_email: str, to_name: str, reset_code: str) -> bool:
+    """Sends transactional email via Resend HTTP REST API (port 443 — works everywhere on cloud hosts)."""
+    import json
+    import urllib.request
+
+    resend_key = os.getenv("RESEND_API_KEY", "")
+    if not resend_key:
+        return False
+
+    from_email = os.getenv("RESEND_FROM", "PEPR Radar <onboarding@resend.dev>")
+    subject = "PEPR — Your Password Reset Code"
+    html_body = _build_reset_email_html(to_name, reset_code)
+
+    payload = json.dumps({
+        "from": from_email,
+        "to": [to_email],
+        "subject": subject,
+        "html": html_body,
+    }).encode("utf-8")
+
+    req = urllib.request.Request(
+        "https://api.resend.com/emails",
+        data=payload,
+        headers={
+            "Authorization": f"Bearer {resend_key}",
+            "Content-Type": "application/json",
+            "User-Agent": "PEPR-App/1.0",
+        },
+        method="POST",
+    )
+
+    ctx = ssl.create_default_context()
+    try:
+        with urllib.request.urlopen(req, context=ctx, timeout=6) as resp:
+            if resp.status in (200, 201):
+                logger.info("[RESEND] Password reset code email sent successfully to %s via Resend API", to_email)
+                return True
+            else:
+                logger.warning("[RESEND] Non-200 response from Resend API: status=%s", resp.status)
+                return False
+    except Exception as exc:
+        logger.warning("[RESEND] Resend API request failed: %s", exc)
+        return False
 
 
 def _send_smtp_blocking(to_email: str, to_name: str, reset_code: str) -> None:
-    """Blocking SMTP send — called via asyncio executor to avoid blocking the event loop."""
+    """Blocking send — tries Resend HTTP API first, then fallbacks to SMTP."""
     smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
     smtp_port = int(os.getenv("SMTP_PORT", "587"))
     smtp_user = os.getenv("SMTP_USER", "")
@@ -138,9 +184,15 @@ def _send_smtp_blocking(to_email: str, to_name: str, reset_code: str) -> None:
         to_email, reset_code
     )
 
-    if not is_smtp_configured():
+    # 1. Try Resend HTTP API first if configured (works seamlessly on Render/AWS/Vercel)
+    if os.getenv("RESEND_API_KEY"):
+        resend_ok = _send_resend_http(to_email, to_name, reset_code)
+        if resend_ok:
+            return
+
+    if not (smtp_user and smtp_password not in ("", "your_app_password_here")):
         logger.warning(
-            "[EMAIL-DEV] SMTP user/password not set in environment. Reset code for %s logged above.",
+            "[EMAIL-DEV] Neither RESEND_API_KEY nor SMTP user/password set in environment. Reset code for %s logged above.",
             to_email
         )
         return
@@ -195,7 +247,7 @@ def _send_smtp_blocking(to_email: str, to_name: str, reset_code: str) -> None:
 
 async def send_reset_code_email(to_email: str, to_name: str, reset_code: str) -> bool:
     """
-    Async wrapper — runs SMTP send in a thread pool so it does not block FastAPI.
+    Async wrapper — runs email send in a thread pool so it does not block FastAPI.
     Returns True on success, False on failure (logs the error).
     """
     loop = asyncio.get_event_loop()
@@ -205,17 +257,18 @@ async def send_reset_code_email(to_email: str, to_name: str, reset_code: str) ->
                 None,
                 partial(_send_smtp_blocking, to_email, to_name, reset_code)
             ),
-            timeout=5.0
+            timeout=7.0
         )
         return True
     except asyncio.TimeoutError:
-        logger.error("[EMAIL] SMTP request timed out after 5s for %s", to_email)
+        logger.error("[EMAIL] Email dispatch timed out after 7s for %s", to_email)
         return False
     except Exception as exc:
         logger.error(
             "[EMAIL] Failed to send reset code to %s: %s", to_email, exc, exc_info=True
         )
         return False
+
 
 
 
