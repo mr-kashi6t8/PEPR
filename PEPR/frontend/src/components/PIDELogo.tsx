@@ -70,10 +70,10 @@ export const PIDELogo: React.FC<PIDELogoProps> = ({
           <span className="h-3.5 w-[2px] bg-[#D4AF37]" />
           <span
             className={`font-bold tracking-wider text-xs uppercase ${
-              isDark ? 'text-[#F59E0B]' : 'text-[#0B2545]'
+              isDark ? 'text-[#F59E0B]' : 'text-[#005A36]'
             }`}
           >
-            RADAR
+            PIDE
           </span>
         </div>
         {showSubtitle && (
