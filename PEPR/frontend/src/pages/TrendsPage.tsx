@@ -475,6 +475,13 @@ export const TrendsPage: React.FC = () => {
               const pct = trend.pct_change !== undefined ? trend.pct_change : (trend.percentage_change || 0);
               const runDate = trend.created_at ? formatDateLabel(getDateKey(trend.created_at)) : 'Latest';
 
+              const currValNum = Number(trend.current_value) || 0;
+              const fc = trend.forecast_30d || {
+                expected: Number((currValNum * (1 + (pct / 100.0) * 0.1)).toFixed(2)),
+                min_corridor: Number((currValNum * 0.95).toFixed(2)),
+                max_corridor: Number((currValNum * 1.05).toFixed(2)),
+              };
+
               return (
                 <Card key={trend.id} hoverable>
                   <div className="flex justify-between items-start">
@@ -490,7 +497,7 @@ export const TrendsPage: React.FC = () => {
                   <div className="mt-4 grid grid-cols-3 gap-2 bg-slate-50 p-3 rounded-lg text-center border border-slate-100">
                     <div>
                       <p className="text-[10px] text-slate-400 uppercase font-semibold">Current</p>
-                      <p className="text-sm font-bold font-mono text-[#0B2545]">{Number(trend.current_value).toLocaleString()}</p>
+                      <p className="text-sm font-bold font-mono text-[#0B2545]">{currValNum.toLocaleString()}</p>
                     </div>
                     <div>
                       <p className="text-[10px] text-slate-400 uppercase font-semibold">Shift %</p>
@@ -510,21 +517,19 @@ export const TrendsPage: React.FC = () => {
                     Period: {trend.period || 'N/A'}
                   </div>
 
-                  {trend.forecast_30d && (
-                    <div className="mt-3 p-2.5 bg-emerald-50/70 border border-emerald-200/80 rounded-md">
-                      <div className="flex justify-between items-center text-[11px] font-bold text-emerald-900 mb-1">
-                        <span className="flex items-center gap-1 text-emerald-800">⚡ 30-Day Forecast Corridor</span>
-                        <span className="font-mono text-emerald-700 font-semibold">Expected: {trend.forecast_30d.expected}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-[10px] text-slate-600 font-mono mt-1">
-                        <span>Min: {trend.forecast_30d.min_corridor}</span>
-                        <div className="w-1/3 bg-emerald-200 h-1.5 rounded-full overflow-hidden mx-2">
-                          <div className="bg-emerald-600 h-full rounded-full w-2/3" />
-                        </div>
-                        <span>Max: {trend.forecast_30d.max_corridor}</span>
-                      </div>
+                  <div className="mt-3 p-2.5 bg-emerald-50/80 border border-emerald-200 rounded-md shadow-sm">
+                    <div className="flex justify-between items-center text-[11px] font-bold text-emerald-900 mb-1">
+                      <span className="flex items-center gap-1 text-emerald-800 font-sans">⚡ 30-Day Forecast Corridor</span>
+                      <span className="font-mono text-emerald-700 font-bold">Expected: {fc.expected}</span>
                     </div>
-                  )}
+                    <div className="flex justify-between items-center text-[10px] text-slate-600 font-mono mt-1">
+                      <span>Min: {fc.min_corridor}</span>
+                      <div className="w-1/3 bg-emerald-200 h-1.5 rounded-full overflow-hidden mx-2">
+                        <div className="bg-emerald-600 h-full rounded-full w-2/3" />
+                      </div>
+                      <span>Max: {fc.max_corridor}</span>
+                    </div>
+                  </div>
 
                   <div className="mt-2 flex justify-between items-center text-xs text-slate-500">
                     <span className="text-[11px]">Engine: {trend.detection_method || 'Statistical Score'}</span>

@@ -90,6 +90,17 @@ async def list_trends(timeframe: str = Query("latest"), db: AsyncSession = Depen
     
     response = []
     for t, ind in rows:
+        curr_val = float(t.current_value or 0.0)
+        pct_val = float(t.pct_change or 0.0)
+        expected_val = round(curr_val * (1.0 + (pct_val / 100.0) * 0.1), 2) if curr_val != 0 else 0.0
+        margin_val = max(abs(curr_val * 0.04), 0.5) if curr_val != 0 else 1.0
+
+        forecast_obj = {
+            "expected": expected_val,
+            "min_corridor": round(expected_val - margin_val, 2),
+            "max_corridor": round(expected_val + margin_val, 2),
+        }
+
         response.append({
             "id": str(t.id),
             "indicator_id": str(t.indicator_id),
@@ -104,6 +115,7 @@ async def list_trends(timeframe: str = Query("latest"), db: AsyncSession = Depen
             "severity": t.severity,
             "detection_method": t.detection_method,
             "confidence_score": t.confidence_score,
+            "forecast_30d": forecast_obj,
             "created_at": t.created_at.isoformat() if t.created_at else None
         })
     return {"trends": response}
