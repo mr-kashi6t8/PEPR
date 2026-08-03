@@ -174,11 +174,11 @@ def _send_smtp_blocking(to_email: str, to_name: str, reset_code: str) -> None:
     for p in ports_to_try:
         try:
             if p == 465:
-                with smtplib.SMTP_SSL(smtp_host, p, context=context, timeout=8) as server:
+                with smtplib.SMTP_SSL(smtp_host, p, context=context, timeout=3) as server:
                     server.login(smtp_user, smtp_password)
                     server.sendmail(smtp_user, to_email, msg.as_string())
             else:
-                with smtplib.SMTP(smtp_host, p, timeout=8) as server:
+                with smtplib.SMTP(smtp_host, p, timeout=3) as server:
                     server.ehlo()
                     server.starttls(context=context)
                     server.login(smtp_user, smtp_password)
@@ -205,16 +205,17 @@ async def send_reset_code_email(to_email: str, to_name: str, reset_code: str) ->
                 None,
                 partial(_send_smtp_blocking, to_email, to_name, reset_code)
             ),
-            timeout=14.0
+            timeout=5.0
         )
         return True
     except asyncio.TimeoutError:
-        logger.error("[EMAIL] SMTP request timed out after 14s for %s", to_email)
+        logger.error("[EMAIL] SMTP request timed out after 5s for %s", to_email)
         return False
     except Exception as exc:
         logger.error(
             "[EMAIL] Failed to send reset code to %s: %s", to_email, exc, exc_info=True
         )
         return False
+
 
 

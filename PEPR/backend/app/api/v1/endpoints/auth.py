@@ -250,24 +250,31 @@ async def forgot_password(req: ForgotPasswordRequest, db: AsyncSession = Depends
 
     smtp_active = is_smtp_configured()
     full_name = user.full_name or "Researcher"
+    email_sent = False
 
     if smtp_active:
-        asyncio.create_task(
-            send_reset_code_email(
+        try:
+            # Await send attempt (with timeout in email_service) so we know if Render SMTP succeeded
+            email_sent = await send_reset_code_email(
                 to_email=req.email,
                 to_name=full_name,
                 reset_code=code
             )
-        )
+        except Exception as err:
+            logger.warning("[AUTH] Email send failed: %s", err)
+            email_sent = False
+
+    if email_sent:
         msg = f"A 6-digit verification code has been sent to {req.email}. Please check your inbox (and spam folder)."
     else:
-        msg = f"Verification code for {req.email}: [{code}] (SMTP env variables not configured on deployed backend)."
+        msg = f"Verification code for {req.email}: [{code}] (Email delivery via server failed. Use this code to reset.)"
 
     return {
         "message": msg,
         "reset_token": token,
-        "dev_code": code if not smtp_active else None,
+        "dev_code": code if not email_sent else None,
     }
+
 
 
 
