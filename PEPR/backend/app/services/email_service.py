@@ -117,6 +117,13 @@ def _build_reset_email_html(full_name: str, reset_code: str) -> str:
 """
 
 
+def is_smtp_configured() -> bool:
+    """Returns True if SMTP environment variables are set."""
+    smtp_user = os.getenv("SMTP_USER", "")
+    smtp_password = os.getenv("SMTP_PASSWORD", "")
+    return bool(smtp_user and smtp_password not in ("", "your_app_password_here"))
+
+
 def _send_smtp_blocking(to_email: str, to_name: str, reset_code: str) -> None:
     """Blocking SMTP send — called via asyncio executor to avoid blocking the event loop."""
     smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
@@ -131,9 +138,9 @@ def _send_smtp_blocking(to_email: str, to_name: str, reset_code: str) -> None:
         to_email, reset_code
     )
 
-    if not smtp_user or smtp_password in ("", "your_app_password_here"):
+    if not is_smtp_configured():
         logger.warning(
-            "[EMAIL-DEV] SMTP user/password not set. Reset code for %s logged above.",
+            "[EMAIL-DEV] SMTP user/password not set in environment. Reset code for %s logged above.",
             to_email
         )
         return
@@ -157,18 +164,33 @@ def _send_smtp_blocking(to_email: str, to_name: str, reset_code: str) -> None:
     msg.attach(MIMEText(_build_reset_email_html(to_name, reset_code), "html"))
 
     context = ssl.create_default_context()
-    if smtp_port == 465:
-        with smtplib.SMTP_SSL(smtp_host, smtp_port, context=context, timeout=10) as server:
-            server.login(smtp_user, smtp_password)
-            server.sendmail(smtp_user, to_email, msg.as_string())
-    else:
-        with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
-            server.ehlo()
-            server.starttls(context=context)
-            server.login(smtp_user, smtp_password)
-            server.sendmail(smtp_user, to_email, msg.as_string())
 
-    logger.info("[EMAIL] Password reset code sent successfully to %s", to_email)
+    # Try configured port first, fallback to 465 SSL if 587 fails (common on cloud hosts like Render/AWS)
+    ports_to_try = [smtp_port]
+    if smtp_port != 465:
+        ports_to_try.append(465)
+
+    last_error = None
+    for p in ports_to_try:
+        try:
+            if p == 465:
+                with smtplib.SMTP_SSL(smtp_host, p, context=context, timeout=8) as server:
+                    server.login(smtp_user, smtp_password)
+                    server.sendmail(smtp_user, to_email, msg.as_string())
+            else:
+                with smtplib.SMTP(smtp_host, p, timeout=8) as server:
+                    server.ehlo()
+                    server.starttls(context=context)
+                    server.login(smtp_user, smtp_password)
+                    server.sendmail(smtp_user, to_email, msg.as_string())
+            logger.info("[EMAIL] Password reset code sent successfully to %s via port %d", to_email, p)
+            return
+        except Exception as err:
+            logger.warning("[EMAIL] Port %d failed for %s: %s", p, to_email, err)
+            last_error = err
+
+    if last_error:
+        raise last_error
 
 
 async def send_reset_code_email(to_email: str, to_name: str, reset_code: str) -> bool:
@@ -183,15 +205,16 @@ async def send_reset_code_email(to_email: str, to_name: str, reset_code: str) ->
                 None,
                 partial(_send_smtp_blocking, to_email, to_name, reset_code)
             ),
-            timeout=12.0
+            timeout=14.0
         )
         return True
     except asyncio.TimeoutError:
-        logger.error("[EMAIL] SMTP request timed out after 12s for %s", to_email)
+        logger.error("[EMAIL] SMTP request timed out after 14s for %s", to_email)
         return False
     except Exception as exc:
         logger.error(
             "[EMAIL] Failed to send reset code to %s: %s", to_email, exc, exc_info=True
         )
         return False
+
 

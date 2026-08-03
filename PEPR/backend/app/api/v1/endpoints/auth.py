@@ -234,7 +234,7 @@ async def forgot_password(req: ForgotPasswordRequest, db: AsyncSession = Depends
     Returns the reset token so the client can proceed to verification.
     """
     import asyncio
-    from app.services.email_service import send_reset_code_email
+    from app.services.email_service import send_reset_code_email, is_smtp_configured
 
     result = await db.execute(select(User).where(User.email == req.email))
     user = result.scalars().first()
@@ -248,20 +248,27 @@ async def forgot_password(req: ForgotPasswordRequest, db: AsyncSession = Depends
     # Generate 6-digit code + signed token
     code, token = generate_reset_code(req.email)
 
-    # Dispatch email sending in background task so API response is instant (<100ms)
+    smtp_active = is_smtp_configured()
     full_name = user.full_name or "Researcher"
-    asyncio.create_task(
-        send_reset_code_email(
-            to_email=req.email,
-            to_name=full_name,
-            reset_code=code
+
+    if smtp_active:
+        asyncio.create_task(
+            send_reset_code_email(
+                to_email=req.email,
+                to_name=full_name,
+                reset_code=code
+            )
         )
-    )
+        msg = f"A 6-digit verification code has been sent to {req.email}. Please check your inbox (and spam folder)."
+    else:
+        msg = f"Verification code for {req.email}: [{code}] (SMTP env variables not configured on deployed backend)."
 
     return {
-        "message": f"A 6-digit verification code has been sent to {req.email}. Please check your inbox.",
+        "message": msg,
         "reset_token": token,
+        "dev_code": code if not smtp_active else None,
     }
+
 
 
 @router.post("/reset-password")
