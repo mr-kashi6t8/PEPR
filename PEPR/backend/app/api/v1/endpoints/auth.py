@@ -231,40 +231,38 @@ async def admin_update_user_role(user_id: str, req: UpdateUserRoleRequest, db: A
 async def forgot_password(req: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
     """
     Sends a 6-digit password reset verification code to the researcher's email.
-    Returns only a token (no code) — the code travels via email only.
+    Returns the reset token so the client can proceed to verification.
     """
+    import asyncio
     from app.services.email_service import send_reset_code_email
 
-    # Always respond with success to prevent email enumeration attacks
     result = await db.execute(select(User).where(User.email == req.email))
     user = result.scalars().first()
 
     if not user:
-        # Return generic message — don't reveal whether email exists
-        return {"message": f"If an account exists for {req.email}, a reset code has been sent."}
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No account found registered under {req.email}. Please check the email address or sign up first."
+        )
 
     # Generate 6-digit code + signed token
     code, token = generate_reset_code(req.email)
 
-    # Send the code via email (non-blocking)
+    # Dispatch email sending in background task so API response is instant (<100ms)
     full_name = user.full_name or "Researcher"
-    sent = await send_reset_code_email(
-        to_email=req.email,
-        to_name=full_name,
-        reset_code=code
+    asyncio.create_task(
+        send_reset_code_email(
+            to_email=req.email,
+            to_name=full_name,
+            reset_code=code
+        )
     )
 
-    if sent:
-        logger.info("Password reset code emailed to %s", req.email)
-    else:
-        logger.warning("Failed to email reset code to %s (SMTP issue)", req.email)
-
-    # Return the token so the frontend can submit it alongside the code the user types
-    # The code itself is NEVER returned in the API response — only travels via email
     return {
         "message": f"A 6-digit verification code has been sent to {req.email}. Please check your inbox.",
-        "reset_token": token,  # frontend sends this back with the code the user types
+        "reset_token": token,
     }
+
 
 @router.post("/reset-password")
 async def reset_password(req: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):

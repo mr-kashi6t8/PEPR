@@ -29,7 +29,7 @@ export const ForgotPasswordPage: React.FC = () => {
       setSuccessMsg(res.message);
       if (res.reset_token) {
         setResetToken(res.reset_token);
-        setTimeout(() => setStep('RESET'), 1500);
+        setStep('RESET');
       }
     } catch (err: any) {
       setErrorMsg(err.message || 'Failed to dispatch reset instructions.');

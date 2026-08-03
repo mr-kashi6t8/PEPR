@@ -125,11 +125,16 @@ def _send_smtp_blocking(to_email: str, to_name: str, reset_code: str) -> None:
     smtp_password = os.getenv("SMTP_PASSWORD", "")
     smtp_from_name = os.getenv("SMTP_FROM_NAME", "PEPR Pakistan Economics Problem Radar")
 
+    # Always log reset code to terminal/logs for development & fallback audit
+    logger.info(
+        "[AUTH-RESET] Password reset verification code generated for %s → [%s]",
+        to_email, reset_code
+    )
+
     if not smtp_user or smtp_password in ("", "your_app_password_here"):
-        # Dev fallback: just log the code so development still works
         logger.warning(
-            "[EMAIL-DEV] SMTP not configured. Reset code for %s → %s",
-            to_email, reset_code
+            "[EMAIL-DEV] SMTP user/password not set. Reset code for %s logged above.",
+            to_email
         )
         return
 
@@ -152,11 +157,16 @@ def _send_smtp_blocking(to_email: str, to_name: str, reset_code: str) -> None:
     msg.attach(MIMEText(_build_reset_email_html(to_name, reset_code), "html"))
 
     context = ssl.create_default_context()
-    with smtplib.SMTP(smtp_host, smtp_port) as server:
-        server.ehlo()
-        server.starttls(context=context)
-        server.login(smtp_user, smtp_password)
-        server.sendmail(smtp_user, to_email, msg.as_string())
+    if smtp_port == 465:
+        with smtplib.SMTP_SSL(smtp_host, smtp_port, context=context, timeout=10) as server:
+            server.login(smtp_user, smtp_password)
+            server.sendmail(smtp_user, to_email, msg.as_string())
+    else:
+        with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
+            server.ehlo()
+            server.starttls(context=context)
+            server.login(smtp_user, smtp_password)
+            server.sendmail(smtp_user, to_email, msg.as_string())
 
     logger.info("[EMAIL] Password reset code sent successfully to %s", to_email)
 
@@ -168,13 +178,20 @@ async def send_reset_code_email(to_email: str, to_name: str, reset_code: str) ->
     """
     loop = asyncio.get_event_loop()
     try:
-        await loop.run_in_executor(
-            None,
-            partial(_send_smtp_blocking, to_email, to_name, reset_code)
+        await asyncio.wait_for(
+            loop.run_in_executor(
+                None,
+                partial(_send_smtp_blocking, to_email, to_name, reset_code)
+            ),
+            timeout=12.0
         )
         return True
+    except asyncio.TimeoutError:
+        logger.error("[EMAIL] SMTP request timed out after 12s for %s", to_email)
+        return False
     except Exception as exc:
         logger.error(
             "[EMAIL] Failed to send reset code to %s: %s", to_email, exc, exc_info=True
         )
         return False
+
