@@ -50,8 +50,25 @@ class IngestionManager:
         retry=retry_if_exception_type((httpx.RequestError, httpx.HTTPStatusError)),
         reraise=True
     )
-    async def _fetch_with_retries(self) -> Any:
-        return await self.connector.fetch()
+    def _apply_data_quality_guardrails(self, records: Any) -> Any:
+        if not isinstance(records, list):
+            return records
+        import math
+        clean_records = []
+        for r in records:
+            if not isinstance(r, dict):
+                clean_records.append(r)
+                continue
+            if "value" in r and r["value"] is not None:
+                try:
+                    val = float(r["value"])
+                    if math.isnan(val) or math.isinf(val) or abs(val) > 1e15:
+                        logger.warning(f"Data quality guardrail dropped invalid observation value: {r['value']}")
+                        continue
+                except (ValueError, TypeError):
+                    continue
+            clean_records.append(r)
+        return clean_records
 
     async def run_ingestion(self) -> Dict[str, Any]:
         """
@@ -68,12 +85,14 @@ class IngestionManager:
             normalized = self.connector.normalize(raw_data)
             logger.info(f"[{self.source_id}] Normalized {len(normalized)} records")
 
-            # 3. Validate
+            # 3. Validate & apply data quality guardrails
             if not self.connector.validate(normalized):
                 raise ValueError("Validation failed for normalized data")
 
+            normalized = self._apply_data_quality_guardrails(normalized)
+
             if len(normalized) == 0:
-                raise ValueError("No valid records were normalized from the source. Ingestion aborted.")
+                raise ValueError("No valid records remained after normalization and quality guardrails. Ingestion aborted.")
 
             # 4. Persist to PostgreSQL via connector's persist() method
             await self.connector.persist(normalized)

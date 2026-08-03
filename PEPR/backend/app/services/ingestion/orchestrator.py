@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import os
@@ -151,27 +152,25 @@ async def run_catalog_source(db: AsyncSession, source: Dict[str, Any]) -> Dict[s
 
 async def run_catalog_sources(db: AsyncSession, sources: Iterable[Dict[str, Any]]) -> List[Dict[str, Any]]:
     results: List[Dict[str, Any]] = []
-    success_count = 0
-    failure_count = 0
+    semaphore = asyncio.Semaphore(4)
 
-    for source in sources:
+    async def _process_source(source: Dict[str, Any]) -> Dict[str, Any]:
         if not source.get("config", {}).get("enabled", True):
-            result = {
+            return {
                 "source_id": source.get("id"),
                 "source_name": source.get("name", source.get("id", "unknown-source")),
                 "status": "SKIPPED",
                 "error": "Source disabled in config",
             }
-            results.append(result)
-            continue
+        async with semaphore:
+            async with AsyncSessionLocal() as source_db:
+                return await run_catalog_source(source_db, source)
 
-        async with AsyncSessionLocal() as source_db:
-            result = await run_catalog_source(source_db, source)
-        results.append(result)
-        if result.get("status") == "SUCCESS":
-            success_count += 1
-        elif result.get("status") == "FAILED":
-            failure_count += 1
+    tasks = [_process_source(src) for src in sources]
+    results = list(await asyncio.gather(*tasks))
+
+    success_count = sum(1 for r in results if r.get("status") == "SUCCESS")
+    failure_count = sum(1 for r in results if r.get("status") == "FAILED")
 
     logger.info(
         "Catalog sweep finished total=%s success=%s failed=%s",

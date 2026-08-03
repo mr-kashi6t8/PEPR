@@ -509,7 +509,24 @@ export const TrendsPage: React.FC = () => {
                   <div className="mt-3 text-[11px] text-slate-500">
                     Period: {trend.period || 'N/A'}
                   </div>
-                  <div className="mt-1 flex justify-between items-center text-xs text-slate-500">
+
+                  {trend.forecast_30d && (
+                    <div className="mt-3 p-2.5 bg-emerald-50/70 border border-emerald-200/80 rounded-md">
+                      <div className="flex justify-between items-center text-[11px] font-bold text-emerald-900 mb-1">
+                        <span className="flex items-center gap-1 text-emerald-800">⚡ 30-Day Forecast Corridor</span>
+                        <span className="font-mono text-emerald-700 font-semibold">Expected: {trend.forecast_30d.expected}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[10px] text-slate-600 font-mono mt-1">
+                        <span>Min: {trend.forecast_30d.min_corridor}</span>
+                        <div className="w-1/3 bg-emerald-200 h-1.5 rounded-full overflow-hidden mx-2">
+                          <div className="bg-emerald-600 h-full rounded-full w-2/3" />
+                        </div>
+                        <span>Max: {trend.forecast_30d.max_corridor}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-2 flex justify-between items-center text-xs text-slate-500">
                     <span className="text-[11px]">Engine: {trend.detection_method || 'Statistical Score'}</span>
                     <span className="font-mono text-[10px] text-slate-400">
                       Confidence: {((trend.confidence_score || 0.85) * 100).toFixed(0)}%

@@ -26,6 +26,28 @@ class TrendDetector:
         
         return magnitude + persistence + unusualness + economic_importance + data_confidence
 
+    def _calculate_forecast_corridor(self, observations: List[Dict[str, Any]], current_val: float, volatility: float) -> Dict[str, float]:
+        if len(observations) < 2:
+            return {
+                "expected": round(current_val, 2),
+                "min_corridor": round(current_val * 0.95, 2),
+                "max_corridor": round(current_val * 1.05, 2),
+            }
+        vals = [float(o["value"]) for o in observations if o.get("value") is not None]
+        alpha = 0.3
+        smoothed = vals[0]
+        for v in vals[1:]:
+            smoothed = alpha * v + (1 - alpha) * smoothed
+
+        std_err = float(np.std(vals)) if len(vals) > 2 else abs(current_val * 0.05)
+        margin = max(std_err * 1.96, abs(current_val * 0.03))
+
+        return {
+            "expected": round(smoothed, 2),
+            "min_corridor": round(smoothed - margin, 2),
+            "max_corridor": round(smoothed + margin, 2),
+        }
+
     def analyze(self, observations: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
         if len(observations) < 1:
             return None
@@ -35,10 +57,11 @@ class TrendDetector:
             ts = observations[0].get("timestamp")
             fmt = lambda t: t.strftime("%b %Y") if hasattr(t, 'strftime') else str(t)[:7]
             label = fmt(ts) if ts else "Latest"
+            curr_val = observations[0]["value"]
             return {
                 "indicator": self.indicator_id,
-                "current_value": observations[0]["value"],
-                "previous_value": observations[0]["value"],
+                "current_value": curr_val,
+                "previous_value": curr_val,
                 "percentage_change": 0.0,
                 "period": f"{label} (First Observation)",
                 "direction": "flat",
@@ -46,6 +69,7 @@ class TrendDetector:
                 "confidence": min(1 / 24.0, 1.0),
                 "detection_method": "Configurable Statistical Score (MoM/YoY)",
                 "supporting_observations": {"mom_change": None, "qoq_change": None, "yoy_change": None, "volatility": 0.0},
+                "forecast_30d": self._calculate_forecast_corridor(observations, curr_val, 0.0),
                 "source_references": ["Derived from raw ingestion DB"],
                 "trend_score": 3.0
             }
@@ -76,10 +100,6 @@ class TrendDetector:
         confidence_score = min(len(observations) / 24.0, 1.0)
         trend_score = self._calculate_trend_score(pct_change, len(observations), volatility)
         
-        # Build a meaningful period string using the full observation span.
-        # Using just the last two timestamps gives "Jul 26 – Jul 26" because all
-        # connectors stamp observations with datetime.now(). Instead, show the
-        # month-year range of the ENTIRE history (first obs → last obs).
         sorted_ts = sorted(
             [o["timestamp"] for o in observations if o.get("timestamp")],
             key=lambda t: t if hasattr(t, 'year') else pd.Timestamp(t)
@@ -93,7 +113,8 @@ class TrendDetector:
         else:
             period_str = f"{p_start} – {p_end} (Latest Ingestion)"
 
-        # Build strict dictionary conforming to requirements
+        forecast_30d = self._calculate_forecast_corridor(observations, changes['current_value'], volatility)
+
         return {
             "indicator": self.indicator_id,
             "current_value": changes['current_value'],
@@ -110,6 +131,7 @@ class TrendDetector:
                 "yoy_change": changes.get('yoy_change'),
                 "volatility": volatility
             },
+            "forecast_30d": forecast_30d,
             "source_references": ["Derived from raw ingestion DB"],
             "trend_score": trend_score
         }

@@ -117,36 +117,38 @@ class RSSConnector(DataSourceConnector):
                 raise ValueError(f"Validation failed: Malformed RSS entry: {item}")
         return True
 
-    async def _get_or_create_data_source(self, source_name: str, rss_url: str) -> uuid.UUID:
-        """Resolve or create a DataSource row so we have a valid FK for news_articles."""
-        if not self.db:
-            return uuid.uuid4()
+    def clean_and_normalize(self, raw_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        valid = []
+        seen_titles = set()
+        for item in raw_data:
+            t = (item.get("title") or "").strip()
+            u = _normalize_url(item.get("url") or "")
+            if t and u and t.lower() not in seen_titles:
+                seen_titles.add(t.lower())
+                item["title"] = t
+                item["url"] = u
+                valid.append(item)
+        return valid
 
-        result = await self._await_if_needed(self.db.execute(select(DataSource).where(DataSource.name == source_name)))
-        ds = result.scalars().first()
-        if ds:
-            return ds.id
+    async def _get_or_create_data_source(self, name: str, url: str) -> uuid.UUID:
+        result = await self._await_if_needed(self.db.execute(select(DataSource).where(DataSource.name == name)))
+        source = result.scalars().first()
+        if source:
+            return source.id
 
-        ds = DataSource(
+        source = DataSource(
             id=uuid.uuid4(),
-            name=source_name,
+            name=name,
             source_type="rss",
-            base_url=rss_url,
+            base_url=url,
             is_active=True,
         )
-        self.db.add(ds)
-        await self._await_if_needed(self.db.flush())  # get id without full commit
-        return ds.id
+        self.db.add(source)
+        await self._await_if_needed(self.db.flush())
+        return source.id
 
     async def persist(self, valid_data: List[Dict[str, Any]]) -> None:
-        """
-        Upserts news articles into news_articles table.
-        ON CONFLICT DO NOTHING on url for full idempotency.
-        """
         if not self.db or not valid_data:
-            return
-
-        if not self.db:
             logger.info("RSS persist skipped: no database session attached")
             return
 
@@ -157,11 +159,24 @@ class RSSConnector(DataSourceConnector):
         inserted = 0
         for item in valid_data:
             try:
+                # Check for duplicate title or URL in recent NewsArticles
+                norm_u = item["url"]
+                title_clean = item["title"][:500]
+                existing_check = await self._await_if_needed(
+                    self.db.execute(
+                        select(NewsArticle.id).where(
+                            (NewsArticle.url == norm_u) | (NewsArticle.title == title_clean)
+                        ).limit(1)
+                    )
+                )
+                if existing_check.scalars().first():
+                    continue
+
                 stmt = pg_insert(NewsArticle).values(
                     id=uuid.uuid4(),
                     source_id=source_id,
-                    title=item["title"][:500],
-                    url=item["url"][:1000],
+                    title=title_clean,
+                    url=norm_u[:1000],
                     content=item.get("content", ""),
                     published_at=item.get("published_at", datetime.now(timezone.utc)),
                 ).on_conflict_do_nothing(index_elements=["url"])
