@@ -14,6 +14,7 @@ from app.services.ingestion.connectors.csv_connector import CSVConnector
 from app.services.ingestion.connectors.youtube import YouTubeConnector
 from app.services.ingestion.connectors.worldbank import WorldBankConnector
 from app.services.ingestion.connectors.commodity import CommodityConnector
+from app.services.ingestion.connectors.public_discussion import PublicDiscussionConnector
 
 logger = logging.getLogger("pepr.ingestion")
 
