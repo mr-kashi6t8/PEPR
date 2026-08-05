@@ -5,80 +5,93 @@ from datetime import datetime, timezone
 import uuid
 import re
 import logging
-
+from sqlalchemy import select
 from app.services.ingestion.connector_base import DataSourceConnector
+from app.models.economy import EconomicIndicator, IndicatorObservation, IndicatorMetadata
 
 logger = logging.getLogger("pepr.fbr")
 
 class FBRConnector(DataSourceConnector):
     """
-    Web Scraping Connector for Federal Board of Revenue (FBR) Pakistan.
-    Scrapes live tax revenue reports, press releases, and tables directly from fbr.gov.pk.
+    Web & API Connector for Federal Board of Revenue (FBR) Pakistan & World Bank Tax Data.
+    Fetches live tax revenue collection and Tax-to-GDP ratio.
     """
     def validate_configuration(self) -> None:
-        if "url" not in self.config or "fbr.gov.pkr" in self.config.get("url", ""):
-            self.config["url"] = "https://www.fbr.gov.pk/"
+        pass
 
     async def fetch(self) -> Any:
-        url = self.config.get("url", "https://www.fbr.gov.pk/")
-        if "fbr.gov.pkr" in url:
-            url = "https://www.fbr.gov.pk/"
+        self.fetch_time = datetime.now(timezone.utc)
+        self.source_url = self.config.get("url", "https://www.fbr.gov.pk/")
+        fetched = {}
 
-        try:
-            async with httpx.AsyncClient(timeout=15.0, follow_redirects=True, verify=False) as client:
-                headers = {
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
-                }
-                response = await client.get(url, headers=headers)
-                response.raise_for_status()
-                return response.text
-        except Exception as e:
-            logger.warning(f"FBR live fetch error for {url}: {e}")
-            return ""
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+
+        async with httpx.AsyncClient(headers=headers, timeout=20.0, follow_redirects=True, verify=False) as client:
+            # 1. Fetch Tax-to-GDP ratio from World Bank API
+            try:
+                wb_url = "https://api.worldbank.org/v2/country/PAK/indicator/GC.TAX.TOTL.GD.ZS?format=json&per_page=5"
+                res_tax_gdp = await self._request(client, "GET", wb_url)
+                data = res_tax_gdp.json()
+                if len(data) > 1 and isinstance(data[1], list):
+                    for item in data[1]:
+                        if item.get("value") is not None:
+                            fetched["tax_to_gdp"] = float(item["value"])
+                            break
+            except Exception as e:
+                logger.warning(f"FBR live Tax-to-GDP fetch error: {e}")
+
+            # 2. Scrape live FBR portal for tax collection figures
+            try:
+                res_fbr = await client.get("https://www.fbr.gov.pk/")
+                if res_fbr.status_code == 200:
+                    soup = BeautifulSoup(res_fbr.text, 'html.parser')
+                    text = soup.get_text()
+                    # Match tax collection figures in Trillion or Billion (ignoring 4-digit years 2020-2030)
+                    matches = re.findall(r'(?:tax|revenue|collection).*?(?:Rs\.?|PKR)?\s*([\d\.]+\s*(?:Trillion|Billion))', text, re.IGNORECASE)
+                    for m in matches:
+                        val_str = m.strip()
+                        num_m = re.search(r'([\d\.]+)', val_str)
+                        if num_m:
+                            val = float(num_m.group(1))
+                            # Ignore current calendar years
+                            if 2020 <= val <= 2030:
+                                continue
+                            if "billion" in val_str.lower():
+                                val = val / 1000.0  # Convert billion to trillion PKR
+                            if 0.1 <= val <= 20.0:
+                                fetched["tax_revenue_trillion"] = round(val, 2)
+                                break
+            except Exception as e:
+                logger.warning(f"FBR live scraper warning: {e}")
+
+        self.raw_payload = fetched
+        return fetched
 
     def normalize(self, raw_data: Any) -> List[Dict[str, Any]]:
-        if not raw_data:
-            return []
-
-        soup = BeautifulSoup(raw_data, 'html.parser')
+        now_iso = self.fetch_time.isoformat()
         normalized = []
 
-        # 1. Parse tables for revenue collection data
-        tables = soup.find_all('table')
-        for table in tables:
-            rows = table.find_all('tr')
-            for row in rows[1:]:
-                cols = row.find_all(['td', 'th'])
-                if len(cols) >= 2:
-                    category = cols[0].get_text(strip=True)
-                    val_text = cols[1].get_text(strip=True)
-                    if any(char.isdigit() for char in val_text):
-                        normalized.append({
-                            "indicator_name": f"FBR Tax Collection - {category[:100]}",
-                            "collection_amount": val_text,
-                            "raw_text_context": f"{category}: {val_text}",
-                            "source_url": self.config.get("url", "https://www.fbr.gov.pk/"),
-                            "retrieved_at": datetime.now(timezone.utc).isoformat()
-                        })
-
-        # 2. Parse text paragraphs searching for revenue figures
-        if not normalized:
-            text_blocks = soup.find_all(['p', 'div', 'h3', 'a'])
-            for block in text_blocks:
-                text = block.get_text(strip=True)
-                if "revenue" in text.lower() or "tax" in text.lower() or "collection" in text.lower():
-                    amounts = re.findall(r'(?:Rs\.?|PKR)?\s*(\d+[\d,.]*\s*(?:Billion|Trillion|Million|Crore)?)', text, re.IGNORECASE)
-                    if amounts and len(text) > 20:
-                        normalized.append({
-                            "indicator_name": "FBR Federal Revenue Collection",
-                            "value_extracted": amounts[0],
-                            "raw_text_context": text[:300],
-                            "source_url": self.config.get("url", "https://www.fbr.gov.pk/"),
-                            "retrieved_at": datetime.now(timezone.utc).isoformat()
-                        })
-                        if len(normalized) >= 10:
-                            break
+        if isinstance(raw_data, dict):
+            if "tax_to_gdp" in raw_data and raw_data["tax_to_gdp"] is not None:
+                normalized.append({
+                    "indicator_code": "FBR_TAX_GDP",
+                    "indicator_name": "FBR Tax-to-GDP Ratio",
+                    "unit": "% of GDP",
+                    "source": "Federal Board of Revenue (FBR)",
+                    "value": float(raw_data["tax_to_gdp"]),
+                    "timestamp": now_iso
+                })
+            if "tax_revenue_trillion" in raw_data and raw_data["tax_revenue_trillion"] is not None:
+                normalized.append({
+                    "indicator_code": "FBR_TAX_REVENUE",
+                    "indicator_name": "FBR Tax Revenue Collection",
+                    "unit": "Trillion PKR",
+                    "source": "Federal Board of Revenue (FBR)",
+                    "value": float(raw_data["tax_revenue_trillion"]),
+                    "timestamp": now_iso
+                })
 
         return normalized
 
@@ -89,40 +102,43 @@ class FBRConnector(DataSourceConnector):
         if not self.db or not valid_data:
             return
 
-        from sqlalchemy import select
-        from app.models.economy import EconomicIndicator, IndicatorObservation
-
         for item in valid_data:
-            code = "FBR_TAX_REVENUE"
-            val_str = item.get("value_extracted") or item.get("collection_amount")
-            if not val_str:
-                continue
-
-            digits = re.findall(r'\d+(?:\.\d+)?', str(val_str).replace(',', ''))
-            if not digits:
-                continue
-            val_float = float(digits[0])
+            code = item["indicator_code"]
+            name = item["indicator_name"]
+            unit = item.get("unit", "")
+            val = float(item["value"])
+            ts = datetime.fromisoformat(item["timestamp"])
 
             stmt = select(EconomicIndicator).where(EconomicIndicator.code == code)
-            result = await self.db.execute(stmt)
-            indicator = result.scalar_one_or_none()
+            res = await self.db.execute(stmt)
+            ind = res.scalars().first()
 
-            if not indicator:
-                indicator = EconomicIndicator(
+            if not ind:
+                ind = EconomicIndicator(
                     id=uuid.uuid4(),
-                    name="FBR Tax Revenue Collection",
                     code=code,
-                    description="Federal Board of Revenue Tax Collection",
-                    is_active=True
+                    name=name,
+                    description=name,
+                    is_active=True,
                 )
-                self.db.add(indicator)
+                self.db.add(ind)
+                await self.db.flush()
+
+                meta = IndicatorMetadata(
+                    id=uuid.uuid4(),
+                    indicator_id=ind.id,
+                    unit=unit,
+                    frequency="monthly",
+                    source_agency="Federal Board of Revenue (FBR)",
+                )
+                self.db.add(meta)
                 await self.db.flush()
 
             obs = IndicatorObservation(
                 id=uuid.uuid4(),
-                indicator_id=indicator.id,
-                timestamp=datetime.now(timezone.utc),
-                value=val_float
+                indicator_id=ind.id,
+                timestamp=ts,
+                value=val
             )
             self.db.add(obs)
 
@@ -131,7 +147,7 @@ class FBRConnector(DataSourceConnector):
 
     def get_metadata(self) -> Dict[str, Any]:
         return {
-            "source": "FBR Live Web Scraper",
-            "url": self.config.get("url", "https://www.fbr.gov.pk/"),
-            "scraper_engine": "BeautifulSoup4 + HTTPX"
+            "source": "FBR Live Data Engine",
+            "url": getattr(self, "source_url", "https://www.fbr.gov.pk/"),
+            "retrieved_at": getattr(self, "fetch_time", None)
         }

@@ -282,7 +282,11 @@ async def get_indicators_summary(db: AsyncSession = Depends(get_db)):
         code_upper = indicator.code.upper()
         name_upper = indicator.name.upper()
 
-        if "RESERVES" in code_upper and latest_raw > 1e6:
+        if "USD" in code_upper or "PKR" in code_upper or "EXCHANGE" in code_upper:
+            latest_value = round(latest_raw, 2)
+            previous_value = round(prev_raw, 2)
+            unit = meta.unit if (meta and meta.unit) else "PKR/USD"
+        elif "RESERVES" in code_upper and latest_raw > 1e6:
             latest_value = round(latest_raw / 1e9, 2)
             previous_value = round(prev_raw / 1e9, 2)
             unit = "Billion USD"
@@ -294,7 +298,7 @@ async def get_indicators_summary(db: AsyncSession = Depends(get_db)):
             latest_value = round(latest_raw, 2)
             previous_value = round(prev_raw, 2)
             unit = meta.unit if (meta and meta.unit) else "Trillion PKR"
-        elif "CPI" in code_upper or "RATE" in code_upper or "GROWTH" in code_upper or "YOY" in code_upper or "SPI" in code_upper or "WPI" in code_upper or "M2" in code_upper:
+        elif "CPI" in code_upper or "POLICY_RATE" in code_upper or "GROWTH" in code_upper or "YOY" in code_upper or "SPI" in code_upper or "WPI" in code_upper or "M2" in code_upper:
             latest_value = round(latest_raw, 2)
             previous_value = round(prev_raw, 2)
             unit = meta.unit if (meta and meta.unit) else "% YoY"
@@ -356,20 +360,9 @@ async def get_indicators_summary(db: AsyncSession = Depends(get_db)):
         else:
             pct_change = 0.0
 
-        # Dynamic fallback for pct_change from trend or historical shift if pct_change is 0.0
-        if pct_change == 0.0:
-            if latest_trend and latest_trend.pct_change != 0.0:
-                pct_change = round(latest_trend.pct_change, 1)
-            elif "CIRCULAR_DEBT" in code_upper:
-                pct_change = 2.7
-            elif "KSE" in code_upper:
-                pct_change = -5.9
-            elif "RESERVES" in code_upper:
-                pct_change = 1.4
-            elif "CPI" in code_upper:
-                pct_change = -0.8
-            elif "TAX" in code_upper:
-                pct_change = 3.1
+        # Dynamic fallback for pct_change from trend if pct_change is 0.0
+        if pct_change == 0.0 and latest_trend and latest_trend.pct_change != 0.0:
+            pct_change = round(latest_trend.pct_change, 1)
         
         # 6. Fetch Policy Target & Gap for this indicator
         gap_query = (
