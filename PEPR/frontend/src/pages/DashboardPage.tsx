@@ -132,9 +132,9 @@ export const DashboardPage: React.FC = () => {
                 <Activity className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-xs text-slate-500 font-medium">Macro Indicators</p>
+                <p className="text-xs text-slate-500 font-medium">Macro & Commodities</p>
                 <h3 className="text-xl font-bold text-[#0B2545]">{indicators.length} Active</h3>
-                <span className="text-[10px] text-emerald-600 font-semibold">100% Real SBP & PBS Data</span>
+                <span className="text-[10px] text-emerald-600 font-semibold">SBP, PBS, OGRA & Commodities</span>
               </div>
             </Card>
 
@@ -145,7 +145,7 @@ export const DashboardPage: React.FC = () => {
               <div>
                 <p className="text-xs text-slate-500 font-medium">Statutory Policy Gaps</p>
                 <h3 className="text-xl font-bold text-[#0B2545]">{gaps.length} Target Gaps</h3>
-                <span className="text-[10px] text-red-600 font-semibold">SBP, FBR, MoE Benchmark Gaps</span>
+                <span className="text-[10px] text-red-600 font-semibold">SBP, OGRA, FBR & MoE Gaps</span>
               </div>
             </Card>
 
@@ -185,7 +185,7 @@ export const DashboardPage: React.FC = () => {
           </div>
           <Link to="/indicators">
             <Button size="sm" variant="outline">
-              Inspect All 17 Indicators →
+              Inspect All {indicators.length} Indicators →
             </Button>
           </Link>
         </CardHeader>
