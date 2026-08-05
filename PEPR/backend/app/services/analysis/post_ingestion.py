@@ -23,124 +23,18 @@ TOPIC_KEYWORDS = {
 async def _sync_commodity_indicators_and_observations(db: AsyncSession) -> None:
     """
     Ensures that Gold, Petrol, Diesel, and Brent Crude Oil exist in EconomicIndicator 
-    and extracts numeric price observations directly from empirical NewsArticles / Market Feeds.
+    and invokes CommodityConnector to fetch & persist live empirical real-time market data.
     """
-    import re
-    from datetime import timedelta
-
-    COMMODITY_SPECS = [
-        {
-            "code": "COMM_GOLD_RATE_TOLA",
-            "name": "Gold Price 24K (Sarafa Rate)",
-            "unit": "PKR / Tola",
-            "source": "All-Pakistan Sarafa Gems and Jewellers Association (APSGJA)",
-            "keywords": ["gold", "tola", "sarafa", "bullion", "24k"],
-            "regex": r"(?:gold|tola|sarafa|bullion).*?(?:rs\.?|pkr|price)?\s*([2-3]\d{2}[,\.]?\d{3})",
-            "default_recent": [245000.0, 248500.0, 252000.0, 255000.0, 251200.0],
-        },
-        {
-            "code": "COMM_PETROL_PRICE",
-            "name": "Motor Gasoline (Petrol) Price",
-            "unit": "PKR / Liter",
-            "source": "Oil & Gas Regulatory Authority (OGRA)",
-            "keywords": ["petrol", "gasoline", "fuel", "ogra", "pml-n"],
-            "regex": r"(?:petrol|gasoline|fuel).*?(?:rs\.?|pkr|price)?\s*([2-3]\d{2}[\.]?\d{1,2})",
-            "default_recent": [268.50, 272.00, 275.60, 269.80, 265.00],
-        },
-        {
-            "code": "COMM_DIESEL_PRICE",
-            "name": "High-Speed Diesel (HSD) Price",
-            "unit": "PKR / Liter",
-            "source": "Oil & Gas Regulatory Authority (OGRA)",
-            "keywords": ["diesel", "hsd", "fuel", "ogra"],
-            "regex": r"(?:diesel|hsd).*?(?:rs\.?|pkr|price)?\s*([2-3]\d{2}[\.]?\d{1,2})",
-            "default_recent": [276.00, 281.50, 284.00, 278.20, 272.50],
-        },
-        {
-            "code": "COMM_BRENT_CRUDE",
-            "name": "Global Brent Crude Oil Price",
-            "unit": "USD / Barrel",
-            "source": "International Energy Agency (IEA)",
-            "keywords": ["brent", "crude", "oil", "wti", "barrel"],
-            "regex": r"(?:brent|crude|oil|wti).*?\$?\s*([6-9]\d|\d{3})[\.]?\d{0,2}",
-            "default_recent": [78.50, 81.20, 83.40, 79.80, 76.20],
-        },
-    ]
-
-    for spec in COMMODITY_SPECS:
-        # Get or create EconomicIndicator
-        stmt = select(EconomicIndicator).where(EconomicIndicator.code == spec["code"])
-        ind_res = await db.execute(stmt)
-        ind = ind_res.scalars().first()
-
-        if not ind:
-            ind = EconomicIndicator(
-                id=uuid.uuid4(),
-                code=spec["code"],
-                name=spec["name"],
-                description=spec["name"],
-                is_active=True,
-            )
-            db.add(ind)
+    from app.services.ingestion.connectors.commodity import CommodityConnector
+    try:
+        conn = CommodityConnector(config={"url": "https://open.er-api.com/v6/latest/USD"}, db=db)
+        raw = await conn.fetch()
+        norm = conn.normalize(raw)
+        if conn.validate(norm):
+            await conn.persist(norm)
             await db.flush()
-
-            meta = IndicatorMetadata(
-                id=uuid.uuid4(),
-                indicator_id=ind.id,
-                unit=spec["unit"],
-                frequency="daily",
-                source_agency=spec["source"],
-            )
-            db.add(meta)
-            await db.flush()
-
-        # Check existing observations count
-        obs_stmt = select(IndicatorObservation).where(IndicatorObservation.indicator_id == ind.id)
-        existing_obs = (await db.execute(obs_stmt)).scalars().all()
-
-        if not existing_obs:
-            # Look for empirical articles matching keywords and regex
-            news_stmt = select(NewsArticle).order_by(NewsArticle.published_at.asc()).limit(150)
-            news_res = await db.execute(news_stmt)
-            articles = news_res.scalars().all()
-
-            extracted_points = []
-            for art in articles:
-                text = f"{art.title} {art.content or ''}".lower()
-                if any(kw in text for kw in spec["keywords"]):
-                    match = re.search(spec["regex"], text)
-                    if match:
-                        try:
-                            val_str = match.group(1).replace(",", "")
-                            val = float(val_str)
-                            if val > 0:
-                                extracted_points.append((art.published_at or datetime.now(timezone.utc), val))
-                        except Exception:
-                            pass
-
-            if extracted_points:
-                for ts, val in extracted_points:
-                    obs = IndicatorObservation(
-                        id=uuid.uuid4(),
-                        indicator_id=ind.id,
-                        timestamp=ts,
-                        value=val,
-                    )
-                    db.add(obs)
-            else:
-                # Build real time-series from defaults if articles have no numeric match
-                now = datetime.now(timezone.utc)
-                for idx, val in enumerate(spec["default_recent"]):
-                    ts = now - timedelta(days=(len(spec["default_recent"]) - idx) * 3)
-                    obs = IndicatorObservation(
-                        id=uuid.uuid4(),
-                        indicator_id=ind.id,
-                        timestamp=ts,
-                        value=val,
-                    )
-                    db.add(obs)
-
-    await db.flush()
+    except Exception as e:
+        logger.warning(f"Commodity live sync warning: {e}")
 
 async def run_post_ingestion_analysis(db: AsyncSession, source_type: str) -> None:
     """

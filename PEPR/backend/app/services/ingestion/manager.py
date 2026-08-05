@@ -13,7 +13,7 @@ from app.services.ingestion.connectors.fbr import FBRConnector
 from app.services.ingestion.connectors.csv_connector import CSVConnector
 from app.services.ingestion.connectors.youtube import YouTubeConnector
 from app.services.ingestion.connectors.worldbank import WorldBankConnector
-from app.services.ingestion.connectors.public_discussion import PublicDiscussionConnector
+from app.services.ingestion.connectors.commodity import CommodityConnector
 
 logger = logging.getLogger("pepr.ingestion")
 
@@ -30,6 +30,7 @@ class IngestionManager:
         "csv_connector": CSVConnector,
         "youtube": YouTubeConnector,
         "worldbank": WorldBankConnector,
+        "commodity": CommodityConnector,
     }
 
 

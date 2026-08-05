@@ -263,6 +263,15 @@
                     }
                 ]
             }
+        },
+        {
+            "id": "commodities_live_feed",
+            "type": "commodity",
+            "name": "Commodities & Fuel Live Real-Time Feed",
+            "schedule": "0 */2 * * *",
+            "config": {
+                "url": "https://open.er-api.com/v6/latest/USD"
+            }
         }
     ]
 }

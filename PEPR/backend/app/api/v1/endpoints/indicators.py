@@ -150,7 +150,7 @@ STANDARD_POLICY_BENCHMARKS = {
     },
     "COMM_GOLD_RATE_TOLA": {
         "target_name": "Official 24K Gold Per Tola Sarafa Benchmark Target",
-        "target_value": 240000.0,
+        "target_value": 250000.0,
         "target_unit": "PKR / Tola",
         "higher_is_better": False,
         "citation": "All-Pakistan Sarafa Gems and Jewellers Association (APSGJA) Official Bullion Determination",
@@ -158,7 +158,7 @@ STANDARD_POLICY_BENCHMARKS = {
     },
     "COMM_PETROL_PRICE": {
         "target_name": "Motor Gasoline (Petrol) Statutory Price Ceiling Target",
-        "target_value": 260.0,
+        "target_value": 275.60,
         "target_unit": "PKR / Liter",
         "higher_is_better": False,
         "citation": "OGRA Statutory Fuel Price Determination & Ministry of Energy (Petroleum Division) Finance Act FY25 Framework",
@@ -166,7 +166,7 @@ STANDARD_POLICY_BENCHMARKS = {
     },
     "COMM_DIESEL_PRICE": {
         "target_name": "High-Speed Diesel (HSD) Statutory Price Ceiling Target",
-        "target_value": 265.0,
+        "target_value": 284.00,
         "target_unit": "PKR / Liter",
         "higher_is_better": False,
         "citation": "OGRA Statutory Petroleum Levy Determination & Ministry of Energy (Petroleum Division)",
