@@ -148,6 +148,38 @@ STANDARD_POLICY_BENCHMARKS = {
         "citation": "PSX Capital Market Trading Volume Target",
         "institution": "Pakistan Stock Exchange (PSX)",
     },
+    "COMM_GOLD_RATE_TOLA": {
+        "target_name": "Gold 24K Per Tola Market Benchmark",
+        "target_value": 240000.0,
+        "target_unit": "PKR / Tola",
+        "higher_is_better": False,
+        "citation": "All-Pakistan Sarafa Gems and Jewellers Association (APSGJA)",
+        "institution": "APSGJA & Bullion Market",
+    },
+    "COMM_PETROL_PRICE": {
+        "target_name": "Motor Gasoline (Petrol) Price Ceiling Target",
+        "target_value": 260.0,
+        "target_unit": "PKR / Liter",
+        "higher_is_better": False,
+        "citation": "Oil & Gas Regulatory Authority (OGRA) & Ministry of Energy",
+        "institution": "OGRA & Ministry of Energy",
+    },
+    "COMM_DIESEL_PRICE": {
+        "target_name": "High-Speed Diesel (HSD) Price Ceiling Target",
+        "target_value": 265.0,
+        "target_unit": "PKR / Liter",
+        "higher_is_better": False,
+        "citation": "Oil & Gas Regulatory Authority (OGRA) & Ministry of Energy",
+        "institution": "OGRA & Ministry of Energy",
+    },
+    "COMM_BRENT_CRUDE": {
+        "target_name": "Global Brent Crude Oil Benchmark Target",
+        "target_value": 75.0,
+        "target_unit": "USD / Barrel",
+        "higher_is_better": False,
+        "citation": "S&P Global Platts & ICE Brent Futures",
+        "institution": "International Energy Agency (IEA)",
+    },
 }
 
 def resolve_policy_benchmark(code: str, name: str) -> dict:
@@ -157,6 +189,14 @@ def resolve_policy_benchmark(code: str, name: str) -> dict:
     if code_upper in STANDARD_POLICY_BENCHMARKS:
         return STANDARD_POLICY_BENCHMARKS[code_upper]
     
+    if "gold" in code_upper or "gold" in name_lower or "bullion" in name_lower:
+        return STANDARD_POLICY_BENCHMARKS["COMM_GOLD_RATE_TOLA"]
+    if "petrol" in code_upper or "petrol" in name_lower or "fuel" in name_lower:
+        return STANDARD_POLICY_BENCHMARKS["COMM_PETROL_PRICE"]
+    if "diesel" in code_upper or "diesel" in name_lower:
+        return STANDARD_POLICY_BENCHMARKS["COMM_DIESEL_PRICE"]
+    if "crude" in code_upper or "brent" in name_lower or "oil" in name_lower:
+        return STANDARD_POLICY_BENCHMARKS["COMM_BRENT_CRUDE"]
     if "spi" in code_upper:
         return STANDARD_POLICY_BENCHMARKS["PBS_SPI_INDEX"]
     if "wpi" in code_upper:

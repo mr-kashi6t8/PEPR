@@ -202,6 +202,67 @@
             "config": {
                 "country": "PAK"
             }
+        },
+        {
+            "id": "gold_commodities_rss",
+            "type": "rss",
+            "name": "Gold & Bullion Market Pakistan",
+            "schedule": "0 */2 * * *",
+            "config": {
+                "rss_url": "https://news.google.com/rss/search?q=gold%20rate%20Pakistan%20OR%20gold%20price%20tola%20OR%20Sarafa%20market&hl=en-PK&gl=PK&ceid=PK:en",
+                "source_name": "Gold & Bullion Market Pakistan"
+            }
+        },
+        {
+            "id": "fuel_crude_oil_rss",
+            "type": "rss",
+            "name": "Fuel & Crude Oil Market",
+            "schedule": "0 */2 * * *",
+            "config": {
+                "rss_url": "https://news.google.com/rss/search?q=petrol%20price%20Pakistan%20OR%20diesel%20price%20OR%20OGRA%20OR%20crude%20oil%20Brent&hl=en-PK&gl=PK&ceid=PK:en",
+                "source_name": "Fuel & Crude Oil Market"
+            }
+        },
+        {
+            "id": "commodities_energy_bundle",
+            "type": "public_discussion",
+            "name": "Commodities & Energy Discussion Bundle",
+            "schedule": "0 */4 * * *",
+            "config": {
+                "request_retries": 3,
+                "min_delay_seconds": 1.0,
+                "max_delay_seconds": 3.0,
+                "feeds": [
+                    {
+                        "type": "rss",
+                        "name": "Gold Rates Pakistan",
+                        "source_name": "Gold Rates Pakistan",
+                        "rss_url": "https://news.google.com/rss/search?q=gold%20rate%20Pakistan%2024k%20tola&hl=en-PK&gl=PK&ceid=PK:en",
+                        "limit": 20
+                    },
+                    {
+                        "type": "rss",
+                        "name": "Fuel & Petroleum Pakistan",
+                        "source_name": "Fuel & Petroleum Pakistan",
+                        "rss_url": "https://news.google.com/rss/search?q=petrol%20diesel%20price%20Pakistan%20OGRA&hl=en-PK&gl=PK&ceid=PK:en",
+                        "limit": 20
+                    },
+                    {
+                        "type": "rss",
+                        "name": "Global Crude Oil Market",
+                        "source_name": "Global Crude Oil Market",
+                        "rss_url": "https://news.google.com/rss/search?q=crude%20oil%20brent%20wti%20prices&hl=en-PK&gl=PK&ceid=PK:en",
+                        "limit": 20
+                    },
+                    {
+                        "type": "gdelt",
+                        "name": "GDELT Commodities & Fuel",
+                        "source_name": "GDELT Commodities & Fuel",
+                        "query": "Pakistan petrol OR diesel OR gold rate OR crude oil OR electricity tariff OR gas price",
+                        "limit": 25
+                    }
+                ]
+            }
         }
     ]
 }

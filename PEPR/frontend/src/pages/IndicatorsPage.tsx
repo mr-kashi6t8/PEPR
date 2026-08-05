@@ -1,27 +1,87 @@
-import React from 'react';
-import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowUpRight, ArrowDownRight, Filter } from 'lucide-react';
 import { useIndicators } from '../api/hooks';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 
 export const IndicatorsPage: React.FC = () => {
   const { data: indicators = [] } = useIndicators();
+  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+
+  const categories = ['ALL', 'Macroeconomic', 'Commodities & Energy', 'Financial & Stocks', 'Fiscal & Tax'];
+
+  const filteredIndicators = indicators.filter((ind: any) => {
+    if (selectedCategory === 'ALL') return true;
+    const cat = (ind.category || '').toLowerCase();
+    const code = (ind.code || '').toUpperCase();
+    const name = (ind.name || '').toLowerCase();
+
+    if (selectedCategory === 'Commodities & Energy') {
+      return (
+        cat.includes('commodity') ||
+        cat.includes('energy') ||
+        code.includes('GOLD') ||
+        code.includes('FUEL') ||
+        code.includes('CRUDE') ||
+        code.includes('PETROL') ||
+        code.includes('DIESEL') ||
+        name.includes('gold') ||
+        name.includes('petrol') ||
+        name.includes('diesel') ||
+        name.includes('fuel') ||
+        name.includes('crude') ||
+        name.includes('oil') ||
+        name.includes('bullion') ||
+        name.includes('tola')
+      );
+    }
+    if (selectedCategory === 'Financial & Stocks') {
+      return cat.includes('capital') || cat.includes('monetary') || code.includes('PSX') || code.includes('SBP') || code.includes('RATE') || name.includes('psx') || name.includes('stock');
+    }
+    if (selectedCategory === 'Fiscal & Tax') {
+      return cat.includes('fiscal') || code.includes('FBR') || code.includes('TAX') || name.includes('tax') || name.includes('revenue');
+    }
+    if (selectedCategory === 'Macroeconomic') {
+      return !cat.includes('commodity') && !cat.includes('energy') && !code.includes('GOLD') && !code.includes('PETROL');
+    }
+    return true;
+  });
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold font-serif text-[#0B2545]">
-          Macroeconomic Indicators Directory (M1)
-        </h1>
-        <p className="text-xs text-slate-500 mt-1">
-          Catalog of macroeconomic indicators ingested from PBS, SBP, PSX, and World Bank APIs.
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold font-serif text-[#0B2545]">
+            Economic & Commodities Indicators Directory (M1)
+          </h1>
+          <p className="text-xs text-slate-500 mt-1">
+            Catalog of macroeconomic, gold, fuel, petroleum, crude oil, and energy indicators ingested live from SBP, PBS, PSX, World Bank, OGRA, Sarafa Bullion Market, and Commodity Feeds.
+          </p>
+        </div>
+
+        {/* Category Filters */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+          <Filter className="w-4 h-4 text-slate-400 mr-1 flex-shrink-0" />
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                selectedCategory === cat
+                  ? 'bg-[#0B2545] text-white shadow-sm'
+                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {indicators.map((ind: any) => {
+        {filteredIndicators.map((ind: any) => {
           const pctChange = typeof ind.pct_change === 'number' && !isNaN(ind.pct_change) 
             ? ind.pct_change 
             : (ind.trend?.pct_change || 0);

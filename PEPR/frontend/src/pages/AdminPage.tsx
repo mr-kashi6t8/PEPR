@@ -34,8 +34,8 @@ export const AdminPage: React.FC = () => {
     switch (type.toLowerCase()) {
       case 'sbp': return 'M1 SBP API';
       case 'pbs': return 'M1 PBS Scraper';
-      case 'rss': return 'M1 News RSS Feed';
-      case 'public_discussion': return 'M3 Public Discussion Bundle';
+      case 'rss': return 'M1 News & Commodity RSS Feed';
+      case 'public_discussion': return 'M3 Public & Commodity Discussion';
       case 'fbr': return 'M1 FBR Scraper';
       case 'psx': return 'M1 PSX API';
       case 'youtube': return 'M3 YouTube Transcripts';

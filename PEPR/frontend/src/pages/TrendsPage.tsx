@@ -34,6 +34,26 @@ function matchesCategory(item: any, selectedCategory: string): boolean {
   if (selectedCategory === 'Fiscal & Energy') {
     return cat.includes('fiscal') || cat.includes('energy') || code.includes('FBR') || code.includes('DEBT') || code.includes('GDP') || code.includes('TAX') || code.includes('UNEMPLOYMENT') || name.includes('tax') || name.includes('debt') || name.includes('gdp') || name.includes('unemployment');
   }
+  if (selectedCategory === 'Commodities & Energy') {
+    return (
+      cat.includes('commodity') ||
+      cat.includes('energy') ||
+      code.includes('GOLD') ||
+      code.includes('FUEL') ||
+      code.includes('CRUDE') ||
+      code.includes('PETROL') ||
+      code.includes('DIESEL') ||
+      code.includes('COMM') ||
+      name.includes('gold') ||
+      name.includes('petrol') ||
+      name.includes('diesel') ||
+      name.includes('fuel') ||
+      name.includes('crude') ||
+      name.includes('oil') ||
+      name.includes('bullion') ||
+      name.includes('tola')
+    );
+  }
   return true;
 }
 
@@ -86,7 +106,7 @@ export const TrendsPage: React.FC = () => {
   const [chartData, setChartData] = useState<TimeSeriesDataPoint[]>([]);
   const [chartUnit, setChartUnit] = useState<string>('%');
 
-  const categories = ['ALL', 'Inflation', 'Monetary Policy', 'External Sector', 'Capital Markets', 'Fiscal & Energy'];
+  const categories = ['ALL', 'Inflation', 'Monetary Policy', 'External Sector', 'Capital Markets', 'Fiscal & Energy', 'Commodities & Energy'];
 
   // Collect unique run dates from trends separately (sorted descending)
   const trendDates = useMemo(() => {

@@ -50,6 +50,9 @@ class IngestionManager:
         retry=retry_if_exception_type((httpx.RequestError, httpx.HTTPStatusError)),
         reraise=True
     )
+    async def _fetch_with_retries(self) -> Any:
+        return await self.connector.fetch()
+
     def _apply_data_quality_guardrails(self, records: Any) -> Any:
         if not isinstance(records, list):
             return records
