@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ArrowUpRight, ArrowDownRight, Filter } from 'lucide-react';
 import { useIndicators } from '../api/hooks';
 import { Card } from '../components/ui/Card';
@@ -8,15 +8,38 @@ export const IndicatorsPage: React.FC = () => {
   const { data: indicators = [] } = useIndicators();
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
 
-  const categories = ['ALL', 'Macroeconomic', 'Commodities & Energy', 'Financial & Stocks', 'Fiscal & Tax'];
+  // Dynamically extract all unique categories present in the indicators array from backend API
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    set.add('ALL');
+    
+    // Explicit primary category order for structure
+    const primary = ['Macroeconomic', 'Commodities & Energy', 'Financial & Stocks', 'Fiscal & Tax'];
+    primary.forEach((c) => set.add(c));
+
+    indicators.forEach((ind: any) => {
+      if (ind.category && typeof ind.category === 'string') {
+        const trimmed = ind.category.trim();
+        if (trimmed) set.add(trimmed);
+      }
+    });
+
+    return Array.from(set);
+  }, [indicators]);
 
   const filteredIndicators = indicators.filter((ind: any) => {
     if (selectedCategory === 'ALL') return true;
-    const cat = (ind.category || '').toLowerCase();
+    const cat = (ind.category || 'Macroeconomic').toLowerCase();
+    const sel = selectedCategory.toLowerCase();
+
+    // 1. Direct exact or substring match for dynamic categories returned by backend API
+    if (cat === sel || cat.includes(sel) || sel.includes(cat)) return true;
+
+    // 2. Heuristic domain match for dynamic sources
     const code = (ind.code || '').toUpperCase();
     const name = (ind.name || '').toLowerCase();
 
-    if (selectedCategory === 'Commodities & Energy') {
+    if (sel.includes('commodit') || sel.includes('energy')) {
       return (
         cat.includes('commodity') ||
         cat.includes('energy') ||
@@ -25,6 +48,7 @@ export const IndicatorsPage: React.FC = () => {
         code.includes('CRUDE') ||
         code.includes('PETROL') ||
         code.includes('DIESEL') ||
+        code.includes('COMM') ||
         name.includes('gold') ||
         name.includes('petrol') ||
         name.includes('diesel') ||
@@ -35,16 +59,16 @@ export const IndicatorsPage: React.FC = () => {
         name.includes('tola')
       );
     }
-    if (selectedCategory === 'Financial & Stocks') {
+    if (sel.includes('financial') || sel.includes('stock') || sel.includes('market')) {
       return cat.includes('capital') || cat.includes('monetary') || code.includes('PSX') || code.includes('SBP') || code.includes('RATE') || name.includes('psx') || name.includes('stock');
     }
-    if (selectedCategory === 'Fiscal & Tax') {
+    if (sel.includes('fiscal') || sel.includes('tax')) {
       return cat.includes('fiscal') || code.includes('FBR') || code.includes('TAX') || name.includes('tax') || name.includes('revenue');
     }
-    if (selectedCategory === 'Macroeconomic') {
+    if (sel.includes('macro')) {
       return !cat.includes('commodity') && !cat.includes('energy') && !code.includes('GOLD') && !code.includes('PETROL');
     }
-    return true;
+    return false;
   });
 
   return (

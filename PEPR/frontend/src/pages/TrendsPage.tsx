@@ -106,7 +106,15 @@ export const TrendsPage: React.FC = () => {
   const [chartData, setChartData] = useState<TimeSeriesDataPoint[]>([]);
   const [chartUnit, setChartUnit] = useState<string>('%');
 
-  const categories = ['ALL', 'Inflation', 'Monetary Policy', 'External Sector', 'Capital Markets', 'Fiscal & Energy', 'Commodities & Energy'];
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    set.add('ALL');
+    const primary = ['Inflation', 'Monetary Policy', 'External Sector', 'Capital Markets', 'Fiscal & Energy', 'Commodities & Energy'];
+    primary.forEach((c) => set.add(c));
+    indicators.forEach((ind: any) => { if (ind.category) set.add(ind.category.trim()); });
+    trends.forEach((t: any) => { if (t.category) set.add(t.category.trim()); });
+    return Array.from(set);
+  }, [indicators, trends]);
 
   // Collect unique run dates from trends separately (sorted descending)
   const trendDates = useMemo(() => {
