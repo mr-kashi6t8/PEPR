@@ -97,10 +97,20 @@ class IngestionManager:
             normalized = self._apply_data_quality_guardrails(normalized)
 
             if len(normalized) == 0:
-                raise ValueError("No valid records remained after normalization and quality guardrails. Ingestion aborted.")
+                logger.warning(
+                    f"[{self.source_id}] No records returned from external source. "
+                    "Source may be temporarily unavailable. Skipping persist."
+                )
+                return {
+                    "status": "success",
+                    "records_processed": 0,
+                    "source_id": self.source_id,
+                    "metadata": self.connector.get_metadata(),
+                }
 
             # 4. Persist to PostgreSQL via connector's persist() method
             await self.connector.persist(normalized)
+
 
             # 5. Run automated post-ingestion NLP Analysis
             try:

@@ -11,6 +11,7 @@ from app.models.economy import EconomicIndicator, IndicatorObservation, Indicato
 
 logger = logging.getLogger("pepr.fbr")
 
+
 class FBRConnector(DataSourceConnector):
     """
     Web & API Connector for Federal Board of Revenue (FBR) Pakistan & World Bank Tax Data.
@@ -25,50 +26,68 @@ class FBRConnector(DataSourceConnector):
         fetched = {}
 
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "application/json",
         }
 
-        async with httpx.AsyncClient(headers=headers, timeout=20.0, follow_redirects=True, verify=False) as client:
-            # 1. Fetch Tax-to-GDP ratio from World Bank API
-            try:
-                wb_url = "https://api.worldbank.org/v2/country/PAK/indicator/GC.TAX.TOTL.GD.ZS?format=json&per_page=5"
-                res_tax_gdp = await self._request(client, "GET", wb_url)
-                data = res_tax_gdp.json()
-                if len(data) > 1 and isinstance(data[1], list):
-                    for item in data[1]:
-                        if item.get("value") is not None:
-                            fetched["tax_to_gdp"] = float(item["value"])
-                            break
-            except Exception as e:
-                logger.warning(f"FBR live Tax-to-GDP fetch error: {e}")
+        async with httpx.AsyncClient(headers=headers, timeout=25.0, follow_redirects=True, verify=False) as client:
 
-            # 2. Scrape live FBR portal for tax collection figures
-            try:
-                res_fbr = await client.get("https://www.fbr.gov.pk/")
-                if res_fbr.status_code == 200:
-                    soup = BeautifulSoup(res_fbr.text, 'html.parser')
-                    text = soup.get_text()
-                    matches = re.findall(r'(?:tax|revenue|collection).*?(?:Rs\.?|PKR)?\s*([\d\.]+\s*(?:Trillion|Billion))', text, re.IGNORECASE)
-                    for m in matches:
-                        val_str = m.strip()
-                        num_m = re.search(r'([\d\.]+)', val_str)
-                        if num_m:
-                            val = float(num_m.group(1))
-                            if 2020 <= val <= 2030:
-                                continue
-                            if "billion" in val_str.lower():
-                                val = val / 1000.0
-                            if 0.1 <= val <= 20.0:
-                                fetched["tax_revenue_trillion"] = round(val, 2)
-                                break
-            except Exception as e:
-                logger.warning(f"FBR live scraper warning: {e}")
+            # 1. World Bank API — primary source for Tax-to-GDP (Pakistan GC.TAX.TOTL.GD.ZS)
+            wb_urls = [
+                "https://api.worldbank.org/v2/country/PAK/indicator/GC.TAX.TOTL.GD.ZS?format=json&per_page=5",
+                "https://api.worldbank.org/v2/country/pk/indicator/GC.TAX.TOTL.GD.ZS?format=json&per_page=5&mrv=3",
+            ]
+            for wb_url in wb_urls:
+                if "tax_to_gdp" in fetched:
+                    break
+                try:
+                    res = await client.get(wb_url)
+                    if res.status_code == 200:
+                        data = res.json()
+                        if len(data) > 1 and isinstance(data[1], list):
+                            for item in data[1]:
+                                if item.get("value") is not None:
+                                    fetched["tax_to_gdp"] = round(float(item["value"]), 2)
+                                    logger.info(f"FBR Tax-to-GDP from World Bank: {fetched['tax_to_gdp']}%")
+                                    break
+                except Exception as e:
+                    logger.warning(f"FBR World Bank API error ({wb_url}): {e}")
 
-        # Fallbacks to ensure ingestion validation never fails
-        if "tax_to_gdp" not in fetched:
-            fetched["tax_to_gdp"] = 9.20
-        if "tax_revenue_trillion" not in fetched:
-            fetched["tax_revenue_trillion"] = 1.08
+            # 2. FBR Portal scrape — best-effort for tax revenue collection figure
+            fbr_urls = [
+                "https://www.fbr.gov.pk/",
+                "https://www.fbr.gov.pk/statistics",
+            ]
+            for fbr_url in fbr_urls:
+                if "tax_revenue_trillion" in fetched:
+                    break
+                try:
+                    res_fbr = await client.get(fbr_url, timeout=15.0)
+                    if res_fbr.status_code == 200:
+                        soup = BeautifulSoup(res_fbr.text, 'html.parser')
+                        text = soup.get_text()
+                        matches = re.findall(
+                            r'(?:tax|revenue|collection).*?(?:Rs\.?|PKR)?\s*([\d\.]+\s*(?:Trillion|Billion))',
+                            text, re.IGNORECASE
+                        )
+                        for m in matches:
+                            val_str = m.strip()
+                            num_m = re.search(r'([\d\.]+)', val_str)
+                            if num_m:
+                                val = float(num_m.group(1))
+                                if 2020 <= val <= 2030:
+                                    continue
+                                if "billion" in val_str.lower():
+                                    val = val / 1000.0
+                                if 0.1 <= val <= 20.0:
+                                    fetched["tax_revenue_trillion"] = round(val, 2)
+                                    logger.info(f"FBR Tax Revenue from portal: {fetched['tax_revenue_trillion']} Trillion PKR")
+                                    break
+                except Exception as e:
+                    logger.warning(f"FBR portal scrape error ({fbr_url}): {e}")
+
+        if not fetched:
+            logger.warning("FBR connector: all data sources unavailable. Returning empty result.")
 
         self.raw_payload = fetched
         return fetched
@@ -83,7 +102,7 @@ class FBRConnector(DataSourceConnector):
                     "indicator_code": "FBR_TAX_GDP",
                     "indicator_name": "FBR Tax-to-GDP Ratio",
                     "unit": "% of GDP",
-                    "source": "Federal Board of Revenue (FBR)",
+                    "source": "World Bank / FBR Pakistan",
                     "value": float(raw_data["tax_to_gdp"]),
                     "timestamp": now_iso
                 })
@@ -100,7 +119,13 @@ class FBRConnector(DataSourceConnector):
         return normalized
 
     def validate(self, normalized_data: List[Dict[str, Any]]) -> bool:
-        return len(normalized_data) > 0
+        """
+        Returns True even if no records were fetched — external source unavailability
+        is not a connector bug. The manager will handle the 0-record case gracefully.
+        """
+        if len(normalized_data) == 0:
+            logger.warning("FBR validate: no live records fetched (external sources may be unavailable). Skipping persist.")
+        return True
 
     async def persist(self, valid_data: List[Dict[str, Any]]) -> None:
         if not self.db or not valid_data:
