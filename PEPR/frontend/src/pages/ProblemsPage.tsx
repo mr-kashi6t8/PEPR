@@ -8,6 +8,8 @@ import { Button } from '../components/ui/Button';
 
 export const ProblemsPage: React.FC = () => {
   const { data: problems = [] } = useProblems();
+  const [search, setSearch] = useState('');
+  const [severityFilter, setSeverityFilter] = useState('ALL');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
 
   const categories = ['ALL', 'Commodities & Energy', 'Inflation & Prices', 'Fiscal Policy & Tax', 'Monetary Policy & Rates', 'Trade & Exports'];
