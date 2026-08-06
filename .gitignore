@@ -30,3 +30,6 @@ dist-ssr/
 *.tmp
 qdrant_db/
 .pytest_cache/
+
+# Generated report outputs (runtime artifacts)
+backend/reports/
